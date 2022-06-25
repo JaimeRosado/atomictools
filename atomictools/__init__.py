@@ -1,3 +1,4 @@
 # coding: utf-8
 
-from .sph_harmonics import test
+from .sph_harmonics import plot_Y
+
