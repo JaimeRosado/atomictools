@@ -59,12 +59,12 @@ class R_hydrog:
         
         fig.update_layout(
            title={
-             'text': "$$R\ frente\ a\ r$$",
+             'text': "$$R\ \textit{vs}\ r$$",
              'y':0.9,
              'x':0.5,
              'xanchor': 'center',
              'yanchor': 'top'},
-           xaxis_title="$$r$$",
+           xaxis_title="$$r (u.a)$$",
            yaxis_title="$$R$$")
         
         fig.show()
@@ -74,12 +74,12 @@ class R_hydrog:
         
         fig.update_layout(
            title={
-             'text': "$$P\ frente\ a\ r$$",
+             'text': "$$P\ \textit{vs}\ r$$",
              'y':0.9,
              'x':0.5,
              'xanchor': 'center',
              'yanchor': 'top'},
-           xaxis_title="$$r$$",
+           xaxis_title="$$r (u.a)$$",
            yaxis_title="$$P$$")
         
         fig.show()
@@ -89,12 +89,12 @@ class R_hydrog:
         
         fig.update_layout(
            title={
-             'text': "$$R^2\ frente\ a\ r$$",
+             'text': "$$R^2\ \textit{vs}\ r$$",
              'y':0.9,
              'x':0.5,
              'xanchor': 'center',
              'yanchor': 'top'},
-           xaxis_title="$$r$$",
+           xaxis_title="$$r (u.a)$$",
            yaxis_title="$$R^2$$")
         
         fig.show()
@@ -104,12 +104,12 @@ class R_hydrog:
         
         fig.update_layout(
            title={
-             'text': "$$P^2\ frente\ a\ r$$",
+             'text': "$$P^2\ \textit{vs}\ r$$",
              'y':0.9,
              'x':0.5,
              'xanchor': 'center',
              'yanchor': 'top'},
-           xaxis_title="$$r$$",
+           xaxis_title="$$r (u.a)$$",
            yaxis_title="$$P^2$$")
         
         fig.show()
