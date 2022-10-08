@@ -1,4 +1,4 @@
 # coding: utf-8
 
-from .sph_harmonics import plot_Y
+from .radial_functions import R_hydrog
 
