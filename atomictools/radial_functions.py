@@ -39,7 +39,6 @@ class R_hydrog:
         Number of points.
     r : array
         Radial distance in a.u.
-    rmax : 
     R : array
         Radial function.
     R2 : array
@@ -77,9 +76,9 @@ class R_hydrog:
             integ, r, R, P2 = self._calculate(rm)
             rmax = np.append(rmax, rm)
             integral = np.append(integral, integ)
-            if integ<0.99:
+            if integ<0.9999:
                 rm *= 1.1
-            elif integ>0.999:
+            elif integ>0.99999:
                 rm *= 0.9
             else:
                 loop = False
@@ -162,25 +161,78 @@ class R_hydrog:
         fig.show()
 
 
-##### Para implementar en este módulo
-# Una clase hija que tome como parámetro de entrada un fichero
-# con un orbital numérico (resultado del programa de las prácticas de cálculo).
-# Esta clase tiene que generar los mismos atributos npt, R, P, etc.
-# Con eso, los métodos gráficos herededos de R_hidrog deben funcionar perfectamente.
-# La clase tiene que comprobar que la integral de P^2 es superior a 0.99.
-# Si no, el rango en r debe alargarse hasta que se cumpla y dar un aviso de esto.
-# Para ello, se hace una extrepolación exponencial de la función a partir de los últimos dos puntos.
+class R_num(R_hydrog):
+    """
+    Class for the radial function calculated by orbitals.py
+    Parameters are in atomic units.
+    
+    Parameters
+    ----------
+    file : str
+        Path of the ASCII file that stores the solution.
 
-# Dejo este código por si es útil
-def import_radius(self, route):
-    data_info=open(route)
-    i=0
-    print("Imported data info: ")
-    print()
-    for linea in data_info:
-        print(linea)
-        i+=1
-        if (i>=7):
-            break
-    data_set=np.loadtxt(route, skiprows=8)
-    return data_set
+    Attributes
+    ----------
+    npt : int
+        Number of points.
+    r : array
+        Radial distance in a.u. 
+    R : array
+        Radial function.
+    R2 : array
+        R^2.
+    P : array
+        r * R.
+    P2 : arra
+        P^2.
+        
+    Methods
+    -------
+    Plot_R()
+        Plot the radial function R.
+    Plot_R2()
+        Plot R^2.
+    Plot_P()
+        Plot P = r * R.
+    Plot_P2()
+        Plot P^2.
+    """
+
+    def __init__(self, file):
+        data_info = open(file)
+        print("Imported data info: ")
+        print()
+        for i, line in enumerate(data_info):
+            print(line)
+            if i==3:
+                model = line[0]
+            if i>6:
+                break
+        data_info.close
+
+        if model=='H':
+            Z, L, E, rmc, npt = np.loadtxt(file, skiprows=5, unpack=True, max_rows=1)
+        elif model=='S':
+            Z, A, a1, a2, L, E, rmc, npt = np.loadtxt(file, skiprows=5, unpack=True, max_rows=1)
+        elif model=='G':
+            Z, N, H, D, L, E, rmc, npt = np.loadtxt(file, skiprows=5, unpack=True, max_rows=1)
+        self.Z = Z
+        self.l = L
+        self.npt = npt
+
+        data_set = np.loadtxt(file, skiprows=8)
+        r = data_set[:,0]
+        P = data_set[:,1]
+        R = P / r
+        r = np.append(0., r)
+        P = np.append(0., P)
+        R = np.append(0., R)
+        # Only s functions
+        if L==0:
+            R[0] = R[1]
+        self.r = r
+        self.P = P
+        self.R = R
+        self.R2 = R**2
+        self.P2 = P**2
+
