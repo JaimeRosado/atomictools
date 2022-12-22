@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import plotly.express as px
+#import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
-from plotly.subplots import make_subplots
+#from plotly.subplots import make_subplots
 import scipy.special as spe
 import numpy as np
 pio.renderers.default='iframe'
 
-def _R_hydrog(r, n, l, Z, mu):
+def radial(r, n, l, Z, mu):
     # Evaluate the radial function R of a hydrogenic atom at r
     # r is in atomic units and can be an array
     # Z is the nuclear charge and mu is the reduced mass in atomic units
@@ -66,8 +66,8 @@ class R_hydrog:
         self.Z = Z
         self.mu = mu
 
-        # Calculate iteratively the upper limit of r
-        # such that the integration of P^2 is between 0.99 and 0.999
+        # Calculate iteratively the upper limit of r such that
+        # the integration of P^2 is between 0.9999 and 0.99999
         rm = 3. * self.n**2 / self.Z / self.mu
         rmax = np.array([])
         integral = np.array([])
@@ -82,6 +82,7 @@ class R_hydrog:
                 rm *= 0.9
             else:
                 loop = False
+        self.rmax = rm
         self.r = r
         self.R = R
         self.R2 = R**2
@@ -95,7 +96,7 @@ class R_hydrog:
     def _calculate(self, rm):
         Dr = rm / (self.npt-1)
         r = np.linspace(0., rm, self.npt)
-        R = _R_hydrog(r, self.n, self.l, self.Z, self.mu)
+        R = radial(r, self.n, self.l, self.Z, self.mu)
         P2 = (r * R)**2
         integ =  P2.sum() * Dr
         return integ, r, R, P2

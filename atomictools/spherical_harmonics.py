@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+#import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
-from plotly.subplots import make_subplots
+#from plotly.subplots import make_subplots
 from cmath import phase
 import scipy.special as spe
 import numpy as np
@@ -17,7 +17,7 @@ def ftheta(l, m, theta):
 def fphi(m, phi):
     return np.exp(1j * m * phi)
 
-class spherical_harmonics:
+class spherical_harmonic:
     
     def __init__(self, l, m):
         
@@ -30,11 +30,11 @@ class spherical_harmonics:
         self.phi = phi
         
         # Computed results of ftheta() and fphi()
-        ftheta_lm = ftheta(l, m, theta)
-        fphi_m = fphi(m, phi)
+        self.ftheta_lm = ftheta(l, m, theta)
+        self.fphi_m = fphi(m, phi)
         
         # Y values, their absolute values, the square of them and phase
-        Y = np.outer(fphi_m, ftheta_lm)
+        Y = np.outer(self.fphi_m, self.ftheta_lm)
         self.Y = Y
         module = np.abs(Y)
         self.module = module
