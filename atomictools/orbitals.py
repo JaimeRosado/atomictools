@@ -50,13 +50,13 @@ class orbital_hydrog():
 
         self.prob = np.abs(theta_lm*phi_m)**2 * R_nl**2
 
-    def got_r(self, n=1):
+    def get_r(self, n=1):
         #plt.scatter(self.r, self.r_dist)
         p = np.random.random(n)
         r = np.interp(p, self.r_dist, self.r)
         return r
     
-    def got_theta(self, n=1):
+    def get_theta(self, n=1):
         #plt.scatter(self.theta, self.theta_dist)
         p = np.random.random(n)
         theta = np.interp(p, self.theta_dist, self.theta)
