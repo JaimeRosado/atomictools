@@ -1,5 +1,3 @@
-./*.txt
-*.ipynb
 .ipynb_checkpoints
 /iframe_figures
 /__pycache__
