@@ -50,15 +50,15 @@ class orbital_hydrog():
 
         self.prob = np.abs(theta_lm*phi_m)**2 * R_nl**2
 
-    def get_r(self, n=1):
+    def get_r(self, points=1):
         #plt.scatter(self.r, self.r_dist)
-        p = np.random.random(n)
+        p = np.random.random(points)
         r = np.interp(p, self.r_dist, self.r)
         return r
     
-    def get_theta(self, n=1):
+    def get_theta(self, points=1):
         #plt.scatter(self.theta, self.theta_dist)
-        p = np.random.random(n)
+        p = np.random.random(points)
         theta = np.interp(p, self.theta_dist, self.theta)
         return theta
         
@@ -80,10 +80,14 @@ class orbital_hydrog():
             ))
         fig.show()
         
-    def plot_scatter(self, n=100000, op=0.01):
-        r = self.got_r(n)
-        theta = self.got_theta(n)
-        phi = np.random.random(n)*2.*np.pi
+    def plot_scatter(self, points=100000, op=0.01):
+        if points>6.7e5:
+            print("The maximum number of points is 6.7e5.")
+            points = 6.7e5
+        points = int(points)
+        r = self.get_r(points)
+        theta = self.get_theta(points)
+        phi = np.random.random(points)*2.*np.pi
         rmax = self.rmax
         
         x, y, z = sph_to_cart(r, theta, phi)
