@@ -1,5 +1,5 @@
 # coding: utf-8
 
 from .radial_functions import R_hydrog, R_num, radial
-from .spherical_harmonics import spherical_harmonic, ftheta, fphi
+from .ang_functions import spherical_harmonic, real_ang_function, ftheta, fphi
 from .orbitals import orbital_hydrog
