@@ -6,7 +6,7 @@ import plotly.io as pio
 #from plotly.subplots import make_subplots
 import scipy.special as spe
 import numpy as np
-pio.renderers.default='iframe'
+#pio.renderers.default='iframe'
 
 def radial(r, n, l, Z, mu):
     # Evaluate the radial function R of a hydrogenic atom at r

@@ -6,7 +6,7 @@ import plotly.io as pio
 #from plotly.subplots import make_subplots
 import numpy as np
 import atomictools as at
-pio.renderers.default='iframe'
+#pio.renderers.default='iframe'
 
 def sph_to_cart(r, theta, phi):
     x = r*np.sin(theta)*np.cos(phi)

@@ -7,7 +7,7 @@ import plotly.io as pio
 from cmath import phase
 import scipy.special as spe
 import numpy as np
-pio.renderers.default='iframe'
+#pio.renderers.default='iframe'
 
 def ftheta(l, m, theta):
     C = np.sqrt((2.*l+1.) * spe.factorial(l-m) / 2. / spe.factorial(l+m))
