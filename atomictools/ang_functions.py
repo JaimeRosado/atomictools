@@ -10,12 +10,19 @@ import numpy as np
 pio.renderers.default='iframe'
 
 def ftheta(l, m, theta):
-    C = np.sqrt((2.*l+1.) * spe.factorial(l-m) / (4.*np.pi) / spe.factorial(l+m))
+    C = np.sqrt((2.*l+1.) * spe.factorial(l-m) / 2. / spe.factorial(l+m))
     legendre = spe.lpmv(m, l, np.cos(theta))
     return C * legendre
 
-def fphi(m, phi):
-    return np.exp(1j * m * phi)
+def fphi(m, phi, s=None):
+    if s is None:
+        return np.sqrt(1./(2.*np.pi)) * np.exp(1j * m * phi)
+    elif s=="cos" or m==0:
+        return np.sqrt(1./np.pi) * np.cos(m * phi)
+    elif s=="sin":
+        return np.sqrt(1./np.pi) * np.sin(m * phi)
+    else:
+        raise ValueError("s should be cos or sin.")
 
 class spherical_harmonic:
     
@@ -90,3 +97,49 @@ class spherical_harmonic:
   
         fig.show()
 
+class real_ang_function(spherical_harmonic):
+
+    def __init__(self, l, m, s="cos"):
+
+        # definition of class atributes
+        self.l = l
+        m = abs(m)
+        self.m = m
+        theta = np.linspace(0., np.pi, 50)
+        self.theta = theta
+        phi = np.linspace(0., 2.*np.pi, 100)
+        self.phi = phi
+        
+        # Computed results of ftheta() and fphi()
+        self.ftheta_lm = ftheta(l, m, theta)       
+        self.fphi_m = fphi(m, phi, s)
+        
+        # Y values, their absolute values, the square of them and phase
+        Y = np.outer(self.fphi_m, self.ftheta_lm)
+        self.Y = Y
+        module = abs(Y)
+        self.module = module
+        prob = Y**2
+        self.prob = prob
+        phase = np.angle(Y)
+        self.phase = phase
+        
+        # Cartesian coordinates for r=1
+        sin_theta = np.sin(theta)
+        x = np.outer(np.cos(phi), sin_theta)
+        y = np.outer(np.sin(phi), sin_theta)
+        z = np.outer(np.ones_like(phi), np.cos(theta))
+        
+        # Starting zoom of the graph. Relies on the l variable to adjust the graph
+        side = 1.25 + l - np.abs(m)
+        self.camera = dict(eye=dict(x=side, y=side, z=1.25))
+
+        # Cartesian projection of prob
+        self.prob_x = prob * x
+        self.prob_y = prob * y
+        self.prob_z = prob * z
+        
+        # Cartesian projection of module
+        self.module_x = module * x
+        self.module_y = module * y
+        self.module_z = module * z
