@@ -14,15 +14,15 @@ def ftheta(l, m, theta):
     legendre = spe.lpmv(m, l, np.cos(theta))
     return C * legendre
 
-def fphi(m, phi, s=None):
-    if s is None:
+def fphi(m, phi, part=None):
+    if part is None:
         return np.sqrt(1./(2.*np.pi)) * np.exp(1j * m * phi)
-    elif s=="cos" or m==0:
+    elif part=="Re" or m==0:
         return np.sqrt(1./np.pi) * np.cos(m * phi)
-    elif s=="sin":
+    elif part=="Im":
         return np.sqrt(1./np.pi) * np.sin(m * phi)
     else:
-        raise ValueError("s should be cos or sin.")
+        raise ValueError("The parameter part should be Re or Im.")
 
 class spherical_harmonic:
     
@@ -99,7 +99,7 @@ class spherical_harmonic:
 
 class real_ang_function(spherical_harmonic):
 
-    def __init__(self, l, m, s="cos"):
+    def __init__(self, l, m, part="Re"):
 
         # definition of class atributes
         self.l = l
@@ -110,9 +110,18 @@ class real_ang_function(spherical_harmonic):
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
         
+        if m==0 and part!="Re":
+            print("For m=0, there is only real part.")
+            part = "Re"
+            self.part = part
+        elif part=="Re" or part=="Im":
+            self.part = part
+        else:
+            raise ValueError("The parameter part should be Re or Im.")
+        
         # Computed results of ftheta() and fphi()
         self.ftheta_lm = ftheta(l, m, theta)       
-        self.fphi_m = fphi(m, phi, s)
+        self.fphi_m = fphi(m, phi, part)
         
         # Y values, their absolute values, the square of them and phase
         Y = np.outer(self.fphi_m, self.ftheta_lm)

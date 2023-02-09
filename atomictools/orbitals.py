@@ -21,19 +21,27 @@ def cart_to_sph(x, y, z):
     return r, theta, phi
 
 class orbital_hydrog():
-    def __init__(self, n, l, m, s=None, Z=1, mu=1.):
+    def __init__(self, n, l, m, part=None, Z=1, mu=1.):
         self.n = n
         self.l = l
         self.m = m
         self.Z = Z
         self.mu = mu
-        self.s = s
         
         self.R = at.R_hydrog(n, l, Z, mu)
-        if s is None:
+        if part is None:
+            self.part = part
             self.Y = at.spherical_harmonic(l, m)
         else:
-            self.Y = at.real_ang_function(l, m, s)
+            if m==0 and part!="Re":
+                print("For m=0, there is only real part.")
+                part = "Re"
+                self.part = part
+            elif part=="Re" or part=="Im":
+                self.part = part
+            else:
+                raise ValueError("The parameter part should be Re or Im.")
+            self.Y = at.real_ang_function(l, m, part)
         
         rmax = self.R.rmax
         self.rmax = rmax
@@ -46,7 +54,7 @@ class orbital_hydrog():
         self.theta_dist /= self.theta_dist[-1]
         
         self.phi = self.Y.phi
-        if s is not None:
+        if part is not None:
             self.phi_dist = (self.Y.fphi_m**2).cumsum() * 2. * np.pi / 99.
             self.phi_dist /= self.phi_dist[-1]
         
@@ -54,7 +62,7 @@ class orbital_hydrog():
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
 
         theta_lm = at.ftheta(l, m, theta)
-        phi_m = at.fphi(m, phi, s)
+        phi_m = at.fphi(m, phi, part)
 
         R_nl = at.radial(r, n, l, Z, mu)
 
@@ -71,7 +79,7 @@ class orbital_hydrog():
         return theta
     
     def get_phi(self, points=1):
-        if self.s is None:
+        if self.part is None:
             phi = np.random.random(points)*2.*np.pi
             return phi
         else:
