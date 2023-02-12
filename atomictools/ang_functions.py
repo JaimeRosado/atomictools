@@ -7,7 +7,8 @@ import plotly.io as pio
 from cmath import phase
 import scipy.special as spe
 import numpy as np
-#pio.renderers.default='iframe'
+import sys
+pio.renderers.default='iframe'
 
 def ftheta(l, m, theta):
     C = np.sqrt((2.*l+1.) * spe.factorial(l-m) / 2. / spe.factorial(l+m))
@@ -152,3 +153,140 @@ class real_ang_function(spherical_harmonic):
         self.module_x = module * x
         self.module_y = module * y
         self.module_z = module * z
+        
+        
+        
+
+class comb_ang_function(spherical_harmonic):
+    
+    def __init__(self,functions,coefficients):
+        
+        if (len(coefficients)>len(functions)):
+            sys.exit("Too many coefficientes")
+        
+        if (len(coefficients)<len(functions)):
+            sys.exit("Too few coefficients")
+        
+        if (len(functions[0])==2):
+            
+            harmonic_list=[]
+            l,m=0,0
+            norm=0
+            
+            for i in range(len(functions)):
+                
+                for j in range(len(functions)):
+                    
+                    if(i==j):
+                        continue
+                        
+                    elif (len(functions[i])!=2):
+                        sys.exit("All elements must be either spherical harmonics or real functions")
+                        
+                    else:
+                        if (functions[i]==functions[j]):
+                            sys.exit("List elements must be different")
+                
+                obj=spherical_harmonic(functions[i][0], functions[i][1])
+                harmonic_list.append(obj.Y)
+                l+=functions[i][0]
+                m+=np.abs(functions[i][1])
+                norm+=coefficients[i]**2
+                
+            self.harmonic_list=harmonic_list
+            self.l=l/len(functions)
+            self.m=m/len(functions)
+            Y=np.dot(coefficients[0],harmonic_list[0])
+        
+            for i in range(1, len(harmonic_list)):
+                aux=np.dot(coefficients[i], harmonic_list[i])
+                Y=Y+aux
+                
+            Y/=np.sqrt(norm)
+            self.Y=Y
+            module = np.abs(Y)
+            self.module = module
+            prob = module**2
+            self.prob = prob
+            phase = np.angle(Y)
+            self.phase = phase
+        
+        
+            
+        elif (len(functions[0])==3):
+            
+            real_list=[]
+            l,m=0,0
+            norm=0
+            
+            for i in range(len(functions)):
+                
+                for j in range(len(functions)):
+                    
+                    if(i==j):
+                        continue
+                        
+                    elif (len(functions[i])!=3):
+                        sys.exit("All elements must be either spherical harmonics or real functions")
+                        
+                    else:
+                        if (functions[i]==functions[j]):
+                            sys.exit("List elements must be different")
+                
+                obj=real_ang_function(functions[i][0], functions[i][1], functions[i][2])
+                real_list.append(obj.Y)
+                l+=functions[i][0]
+                m+=np.abs(functions[i][1])
+                norm+=coefficients[i]**2
+            
+            self.real_list=real_list
+            self.l=l/len(functions)
+            self.m=m/len(functions)
+            Y=np.dot(coefficients[0],real_list[0])
+        
+            for i in range(1, len(real_list)):
+                aux=np.dot(coefficients[i], real_list[i])
+                Y=Y+aux
+                
+            Y/=np.sqrt(norm)
+            self.Y=Y
+            module = np.abs(Y)
+            self.module = module
+            prob = module**2
+            self.prob = prob
+            phase = np.angle(Y)
+            self.phase = phase
+            
+        
+        else:
+            sys.exit("Wrong arguments")
+            
+        # definition of class atributes
+        theta = np.linspace(0., np.pi, 50)
+        self.theta = theta
+        phi = np.linspace(0., 2.*np.pi, 100)
+        self.phi = phi
+            
+        # Cartesian coordinates for r=1
+        sin_theta = np.sin(theta)
+        x = np.outer(np.cos(phi), sin_theta)
+        y = np.outer(np.sin(phi), sin_theta)
+        z = np.outer(np.ones_like(phi), np.cos(theta))
+        
+        # Starting zoom of the graph. Relies on the l variable to adjust the graph
+        side = 1.25 + self.l - self.m
+        self.camera = dict(eye=dict(x=side, y=side, z=1.25))
+
+        # Cartesian projection of prob
+        self.prob_x = prob * x
+        self.prob_y = prob * y
+        self.prob_z = prob * z
+        
+        # Cartesian projection of module
+        self.module_x = module * x
+        self.module_y = module * y
+        self.module_z = module * z
+
+        
+            
+            
