@@ -25,10 +25,10 @@ def fphi(m, phi, part=None):
     else:
         raise ValueError("The parameter part should be Re or Im.")
 
+
 class spherical_harmonic:
     
     def __init__(self, l, m):
-        
         # definition of class atributes
         self.l = l
         self.m = m
@@ -58,8 +58,8 @@ class spherical_harmonic:
         z = np.outer(np.ones_like(phi), np.cos(theta))
         
         # Starting zoom of the graph. Relies on the l variable to adjust the graph
-        side = 1.25 + l - np.abs(m)
-        self.camera = dict(eye=dict(x=side, y=side, z=1.25))
+        #side = 1.25 + l - np.abs(m)
+        #self.camera = dict(eye=dict(x=side, y=side, z=1.25))
 
         # Cartesian projection of prob
         self.prob_x = prob * x
@@ -80,7 +80,7 @@ class spherical_harmonic:
                highlightcolor="limegreen",
                project_z=True))  
     
-        fig.update_layout(scene_aspectmode='data', scene_camera=self.camera)
+        fig.update_layout(scene_aspectmode='data')#, scene_camera=self.camera)
   
         fig.show()
     
@@ -94,14 +94,14 @@ class spherical_harmonic:
               highlightcolor="limegreen",
               project_z=True))
         
-        fig.update_layout(scene_aspectmode='data', scene_camera=self.camera)
+        fig.update_layout(scene_aspectmode='data')#, scene_camera=self.camera)
   
         fig.show()
+
 
 class real_ang_function(spherical_harmonic):
 
     def __init__(self, l, m, part="Re"):
-
         # definition of class atributes
         self.l = l
         m = abs(m)
@@ -141,8 +141,8 @@ class real_ang_function(spherical_harmonic):
         z = np.outer(np.ones_like(phi), np.cos(theta))
         
         # Starting zoom of the graph. Relies on the l variable to adjust the graph
-        side = 1.25 + l - np.abs(m)
-        self.camera = dict(eye=dict(x=side, y=side, z=1.25))
+        #side = 1.25 + l - np.abs(m)
+        #self.camera = dict(eye=dict(x=side, y=side, z=1.25))
 
         # Cartesian projection of prob
         self.prob_x = prob * x
@@ -153,119 +153,65 @@ class real_ang_function(spherical_harmonic):
         self.module_x = module * x
         self.module_y = module * y
         self.module_z = module * z
-        
-        
-        
+
 
 class comb_ang_function(spherical_harmonic):
     
-    def __init__(self,functions,coefficients):
+    def __init__(self, functions, coefficients):
+        if len(functions)!=len(coefficients):
+            raise ValueError(
+                "The lists of functions and coefficients must have the same length.")
+
+        # Normalization
+        norm = np.array([abs(c)**2 for c in coefficients]).sum()
+        norm = np.sqrt(norm)
+        coefficients /= norm
         
-        if (len(coefficients)>len(functions)):
-            sys.exit("Too many coefficientes")
-        
-        if (len(coefficients)<len(functions)):
-            sys.exit("Too few coefficients")
-        
-        if (len(functions[0])==2):
-            
-            harmonic_list=[]
-            l,m=0,0
-            norm=0
-            
-            for i in range(len(functions)):
-                
-                for j in range(len(functions)):
-                    
-                    if(i==j):
-                        continue
-                        
-                    elif (len(functions[i])!=2):
-                        sys.exit("All elements must be either spherical harmonics or real functions")
-                        
-                    else:
-                        if (functions[i]==functions[j]):
-                            sys.exit("List elements must be different")
-                
-                obj=spherical_harmonic(functions[i][0], functions[i][1])
-                harmonic_list.append(obj.Y)
-                l+=functions[i][0]
-                m+=np.abs(functions[i][1])
-                norm+=coefficients[i]**2
-                
-            self.harmonic_list=harmonic_list
-            self.l=l/len(functions)
-            self.m=m/len(functions)
-            Y=np.dot(coefficients[0],harmonic_list[0])
-        
-            for i in range(1, len(harmonic_list)):
-                aux=np.dot(coefficients[i], harmonic_list[i])
-                Y=Y+aux
-                
-            Y/=np.sqrt(norm)
-            self.Y=Y
-            module = np.abs(Y)
-            self.module = module
-            prob = module**2
-            self.prob = prob
-            phase = np.angle(Y)
-            self.phase = phase
-        
-        
-            
-        elif (len(functions[0])==3):
-            
-            real_list=[]
-            l,m=0,0
-            norm=0
-            
-            for i in range(len(functions)):
-                
-                for j in range(len(functions)):
-                    
-                    if(i==j):
-                        continue
-                        
-                    elif (len(functions[i])!=3):
-                        sys.exit("All elements must be either spherical harmonics or real functions")
-                        
-                    else:
-                        if (functions[i]==functions[j]):
-                            sys.exit("List elements must be different")
-                
-                obj=real_ang_function(functions[i][0], functions[i][1], functions[i][2])
-                real_list.append(obj.Y)
-                l+=functions[i][0]
-                m+=np.abs(functions[i][1])
-                norm+=coefficients[i]**2
-            
-            self.real_list=real_list
-            self.l=l/len(functions)
-            self.m=m/len(functions)
-            Y=np.dot(coefficients[0],real_list[0])
-        
-            for i in range(1, len(real_list)):
-                aux=np.dot(coefficients[i], real_list[i])
-                Y=Y+aux
-                
-            Y/=np.sqrt(norm)
-            self.Y=Y
-            module = np.abs(Y)
-            self.module = module
-            prob = module**2
-            self.prob = prob
-            phase = np.angle(Y)
-            self.phase = phase
-            
-        
-        else:
-            sys.exit("Wrong arguments")
-            
-        # definition of class atributes
+        self.l = None
+        self.m = None
         theta = np.linspace(0., np.pi, 50)
         self.theta = theta
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
+        Y = np.zeros((100, 50), dtype='complex128')
+        
+        check = []
+        # Combination of spherical harmonics, i.e., list of (l, m)
+        if all([len(f)==2 for f in functions]):
+            # Calculate Y
+            for f, c in zip(functions, coefficients):
+                if f in check:
+                    raise ValueError("The spherical harmonics must be different.")
+                check.append(f)
+                sh = spherical_harmonic(*f)
+                Y += c * sh.Y
+
+        # Combination of real angular functions, i.e., list of (l, m, part)
+        elif all([len(f)==3 for f in functions]):
+            # Check if part="Re" for m=0
+            for i, (l, m, part) in enumerate(functions):
+                if m==0 and part!="Re":
+                    part = "Re"
+                    functions[i] = (l, m, part)
+            # Calculate Y
+            for f, c in zip(functions, coefficients):
+                if f in check:
+                    raise ValueError("The angular functions must be different.")
+                check.append(f)
+                sh = real_ang_function(*f)
+                Y += c * sh.Y
+
+        else:
+            raise ValueError(
+                "All the elements of functions must in the format either (l, m) or (l, m, part).")
+
+        self.Y = Y
+        module = np.abs(Y)
+        self.module = module
+        prob = module**2
+        self.prob = prob
+        phase = np.angle(Y)
+        self.phase = phase
             
         # Cartesian coordinates for r=1
         sin_theta = np.sin(theta)
@@ -274,8 +220,8 @@ class comb_ang_function(spherical_harmonic):
         z = np.outer(np.ones_like(phi), np.cos(theta))
         
         # Starting zoom of the graph. Relies on the l variable to adjust the graph
-        side = 1.25 + self.l - self.m
-        self.camera = dict(eye=dict(x=side, y=side, z=1.25))
+        #side = 1.25 + self.l - self.m
+        #self.camera = dict(eye=dict(x=side, y=side, z=1.25))
 
         # Cartesian projection of prob
         self.prob_x = prob * x
@@ -286,7 +232,3 @@ class comb_ang_function(spherical_harmonic):
         self.module_x = module * x
         self.module_y = module * y
         self.module_z = module * z
-
-        
-            
-            
