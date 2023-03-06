@@ -167,6 +167,12 @@ class R_hydrog:
         
         fig.show()
 
+    def interpolate(self, r):
+        interp = interp1d(self.r, self.R, fill_value="extrapolate")
+        R = interp(r)
+        R[R<0.] = 0. # For r>rmax
+        return R
+
 
 class R_num(R_hydrog):
     """

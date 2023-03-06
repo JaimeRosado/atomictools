@@ -68,9 +68,16 @@ class orbital_hydrog():
 
         theta_lm = at.ftheta(l, m, theta)
         phi_m = at.fphi(m, phi, part)
-        self.ang_vals=np.abs(theta_lm*phi_m)**2
+
         R_nl = at.radial(r, n, l, Z, mu)
-        self.prob = self.ang_vals * R_nl**2
+
+        self.prob = np.abs(theta_lm*phi_m)**2 * R_nl**2
+        self.prob2 = np.abs(self.interpolate(r, theta, phi))**2
+
+    def interpolate(self, r, theta, phi):
+        R = self.R.interpolate(r)
+        Y = self.Y.interpolate(theta, phi)
+        return R * Y
 
     def get_r(self, points=1):
         p = np.random.random(points)
@@ -101,6 +108,24 @@ class orbital_hydrog():
             y=self.y.flatten(),
             z=self.z.flatten(),
             value=self.prob.flatten(),
+            opacity=0.1,
+            isomin=0.002*max_val,
+            isomax=0.99*max_val,
+            surface_count=100,
+            colorscale='viridis'
+            ))
+        fig.show()
+
+    def plot_volume2(self):
+        
+        min_val = np.min(self.prob2)
+        max_val = np.max(self.prob2)
+        
+        fig = go.Figure(data=go.Volume(
+            x=self.x.flatten(),
+            y=self.y.flatten(),
+            z=self.z.flatten(),
+            value=self.prob2.flatten(),
             opacity=0.1,
             isomin=0.002*max_val,
             isomax=0.99*max_val,
@@ -142,7 +167,7 @@ class orbital_hydrog():
         
 
 class orbital(orbital_hydrog):
-    def __init__(self,f_rad, f_ang):
+    def __init__(self, f_rad, f_ang):
         
         l=f_rad.l
         m=f_ang.m

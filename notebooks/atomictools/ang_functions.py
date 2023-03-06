@@ -8,6 +8,7 @@ from cmath import phase
 import scipy.special as spe
 import numpy as np
 import sys
+from scipy.interpolate import interp1d
 from scipy.interpolate import RegularGridInterpolator
 pio.renderers.default='iframe'
 
@@ -20,9 +21,9 @@ def fphi(m, phi, part=None):
     if part is None:
         return np.sqrt(1./(2.*np.pi)) * np.exp(1j * m * phi)
     elif part=="Re" or m==0:
-        return np.sqrt(1./np.pi) * np.cos(m * phi)
+        return (-1)**m * np.sqrt(1./np.pi) * np.cos(m * phi)
     elif part=="Im":
-        return np.sqrt(1./np.pi) * np.sin(m * phi)
+        return (-1)**m * np.sqrt(1./np.pi) * np.sin(m * phi)
     else:
         raise ValueError("The parameter part should be Re or Im.")
 
@@ -109,6 +110,14 @@ class spherical_harmonic:
         fig.update_layout(scene_aspectmode='data')#, scene_camera=self.camera)
   
         fig.show()
+
+    def interpolate(self, theta, phi):
+        interp_theta = interp1d(self.theta, self.ftheta_lm, fill_value="extrapolate")
+        ftheta = interp_theta(theta)
+        interp_phi = interp1d(self.phi, self.fphi_m, fill_value="extrapolate")
+        fphi = interp_phi(phi)
+        Y = ftheta * fphi # If theta and phi are arrays, they should have the same length
+        return Y
 
 
 class real_ang_function(spherical_harmonic):
@@ -245,3 +254,10 @@ class comb_ang_function(spherical_harmonic):
         self.module_x = module * x
         self.module_y = module * y
         self.module_z = module * z
+
+    def interpolate(self, theta, phi):
+        interp = RegularGridInterpolator((self.phi, self.theta), self.Y,
+                                     bounds_error=False, fill_value=None)#, method="quintic")
+        Y = interp((phi, theta))
+        return Y
+
