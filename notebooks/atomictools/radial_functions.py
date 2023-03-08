@@ -106,6 +106,11 @@ class R_hydrog:
         P2 = (r * R)**2
         integ =  P2.sum() * Dr
         return integ, r, R, P2
+    
+    def evaluate(self, r):
+        r = np.array(r)
+        R = radial(r, self.n, self.l, self.Z, self.mu)
+        return R
 
     def plot_R(self):
         fig = go.Figure(data = go.Scatter(x = self.r, y = self.R))
@@ -166,12 +171,6 @@ class R_hydrog:
            yaxis_title="$$P^2$$")
         
         fig.show()
-
-    def interpolate(self, r):
-        interp = interp1d(self.r, self.R, fill_value="extrapolate")
-        R = interp(r)
-        R[R<0.] = 0. # For r>rmax
-        return R
 
 
 class R_num(R_hydrog):
@@ -249,4 +248,12 @@ class R_num(R_hydrog):
         self.R = R
         self.R2 = R**2
         self.P2 = P**2
+
+    def evaluate(self, r):
+        # TODO
+        interp = interp1d(self.r, self.R, fill_value="extrapolate")
+        R = interp(r)
+        #R[R<0.] = 0. # For r>rmax
+        #TO DO: hacer extrapolación exponencial a partir de self.R[-1] y self.R[-2]
+        return R
 

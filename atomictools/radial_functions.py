@@ -6,6 +6,7 @@ import plotly.io as pio
 #from plotly.subplots import make_subplots
 import scipy.special as spe
 import numpy as np
+from scipy.interpolate import interp1d
 #pio.renderers.default='iframe'
 
 def radial(r, n, l, Z, mu):
@@ -16,6 +17,11 @@ def radial(r, n, l, Z, mu):
     rho = 2. * mu * Z * r / n
     laguerre = spe.assoc_laguerre(rho, n-l-1, 2*l+1)
     return C * np.exp(-rho/2.) * rho**l * laguerre
+
+def interpolate_1d(r, r_dist, r_val):
+    interp = interp1d(r, r_dist, fill_value="extrapolate")
+    r_interp = interp(r_val)
+    return r_interp
 
 class R_hydrog:
     """
@@ -161,6 +167,11 @@ class R_hydrog:
         
         fig.show()
 
+    def interpolate(self, r):
+        interp = interp1d(self.r, self.R, fill_value="extrapolate")
+        R = interp(r)
+        return R
+
 
 class R_num(R_hydrog):
     """
@@ -220,6 +231,7 @@ class R_num(R_hydrog):
         self.Z = Z
         self.l = L
         self.npt = npt
+        self.rmax = rmc
 
         data_set = np.loadtxt(file, skiprows=8)
         r = data_set[:,0]

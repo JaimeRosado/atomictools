@@ -72,11 +72,11 @@ class orbital_hydrog():
         R_nl = at.radial(r, n, l, Z, mu)
 
         self.prob = np.abs(theta_lm*phi_m)**2 * R_nl**2
-        self.prob2 = np.abs(self.interpolate(r, theta, phi))**2
+        self.prob2 = np.abs(self.evaluate(r, theta, phi))**2
 
-    def interpolate(self, r, theta, phi):
-        R = self.R.interpolate(r)
-        Y = self.Y.interpolate(theta, phi)
+    def evaluate(self, r, theta, phi):
+        R = self.R.evaluate(r)
+        Y = self.Y.evaluate(theta, phi)
         return R * Y
 
     def get_r(self, points=1):
@@ -200,8 +200,12 @@ class orbital(orbital_hydrog):
             
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
+        self.r2 = r
+        self.theta2 = theta
+        self.phi2 = phi
         
-        self.prob=interpolate_3d(self.r, self.R.R, r, phi, theta, self.Y.Y)
+        #self.prob = np.abs(self.evaluate(r, theta, phi))**2
+        self.prob = np.abs(self.Y.evaluate(theta, phi))**2 * self.R.evaluate(r)**2
 
         
     def get_r(self, points=1):

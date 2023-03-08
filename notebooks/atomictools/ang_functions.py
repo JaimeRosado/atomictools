@@ -111,13 +111,12 @@ class spherical_harmonic:
   
         fig.show()
 
-    def interpolate(self, theta, phi):
-        interp_theta = interp1d(self.theta, self.ftheta_lm, fill_value="extrapolate")
-        ftheta = interp_theta(theta)
-        interp_phi = interp1d(self.phi, self.fphi_m, fill_value="extrapolate")
-        fphi = interp_phi(phi)
-        Y = ftheta * fphi # If theta and phi are arrays, they should have the same length
-        return Y
+    def evaluate(self, theta, phi):
+        theta = np.array(theta)
+        phi = np.array(phi)
+        ftheta_lm = ftheta(self.l, self.m, theta)       
+        fphi_m = fphi(self.m, phi)
+        return ftheta_lm * fphi_m
 
 
 class real_ang_function(spherical_harmonic):
@@ -175,6 +174,13 @@ class real_ang_function(spherical_harmonic):
         self.module_x = module * x
         self.module_y = module * y
         self.module_z = module * z
+        
+    def evaluate(self, theta, phi):
+        theta = np.array(theta)
+        phi = np.array(phi)
+        ftheta_lm = ftheta(self.l, self.m, theta)       
+        fphi_m = fphi(self.m, phi, self.part)
+        return ftheta_lm * fphi_m
 
 
 class comb_ang_function(spherical_harmonic):
@@ -255,9 +261,9 @@ class comb_ang_function(spherical_harmonic):
         self.module_y = module * y
         self.module_z = module * z
 
-    def interpolate(self, theta, phi):
+    def evaluate(self, theta, phi):
         interp = RegularGridInterpolator((self.phi, self.theta), self.Y,
                                      bounds_error=False, fill_value=None)#, method="quintic")
         Y = interp((phi, theta))
-        return Y
+        return 1.*Y
 
