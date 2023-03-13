@@ -7,6 +7,7 @@ import plotly.io as pio
 import scipy.special as spe
 import numpy as np
 from scipy.interpolate import interp1d
+from scipy.optimize import curve_fit
 #pio.renderers.default='iframe'
 
 def radial(r, n, l, Z, mu):
@@ -106,6 +107,30 @@ class R_hydrog:
         P2 = (r * R)**2
         integ =  P2.sum() * Dr
         return integ, r, R, P2
+    
+    def evaluate(self, r):
+        
+        
+        if len(r) < 10:
+            R=[]
+            for i in range(len(r)):
+                if r[i] < self.rmax:
+                    aux = np.array(r[i])
+                    interp = interp1d(self.r, self.R, fill_value="extrapolate")
+                    R.append(interp(aux))
+
+                elif r[i] > self.rmax:
+                    aux = np.array(r[i])
+                    popt, pcov = curve_fit(lambda x, a, b: b/(a*x), (self.r[-1], self.r[-2], self.r[-3], self.r[-4]), 
+                                           (self.R[-1], self.R[-2], self.R[-3], self.R[-4]), method='dogbox')
+                    r_val = popt[1]/(popt[0]*r[i])
+                    R.append(r_val)
+        
+        else:
+            interp = interp1d(self.r, self.R, fill_value="extrapolate")
+            R = interp(r)
+            
+        return R
 
     def plot_R(self):
         fig = go.Figure(data = go.Scatter(x = self.r, y = self.R))
@@ -166,11 +191,6 @@ class R_hydrog:
            yaxis_title="$$P^2$$")
         
         fig.show()
-
-    def interpolate(self, r):
-        interp = interp1d(self.r, self.R, fill_value="extrapolate")
-        R = interp(r)
-        return R
 
 
 class R_num(R_hydrog):
@@ -248,4 +268,5 @@ class R_num(R_hydrog):
         self.R = R
         self.R2 = R**2
         self.P2 = P**2
+
 
