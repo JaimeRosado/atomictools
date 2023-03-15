@@ -119,11 +119,16 @@ class R_hydrog:
                     interp = interp1d(self.r, self.R, fill_value="extrapolate")
                     R.append(interp(aux))
 
-                elif r[i] > self.rmax:
-                    aux = np.array(r[i])
-                    popt, pcov = curve_fit(lambda x, a, b: b/(a*x), (self.r[-1], self.r[-2], self.r[-3], self.r[-4]), 
-                                           (self.R[-1], self.R[-2], self.R[-3], self.R[-4]), method='dogbox')
-                    r_val = popt[1]/(popt[0]*r[i])
+                elif r[i] > self.rmax: 
+                    #extrapolacion exponencial #1: ln R = a*r + b
+                                               #2: R = exp(a*r + b)
+                                               #3: R = exp(b)*exp(a*r)
+                            
+                    popt, pcov = curve_fit(lambda x, a, b: a*x + b, (self.r[-1], self.r[-2], self.r[-3]),
+                                           np.log((self.R[-1], self.R[-2], self.R[-3])), method='dogbox')
+                    
+                    r_val = np.exp(popt[1])*np.exp(popt[0]*r[i])
+                    
                     R.append(r_val)
         
         else:
