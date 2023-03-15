@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 #import plotly.express as px
 import plotly.graph_objects as go
-import plotly.io as pio
+#import plotly.io as pio
 #from plotly.subplots import make_subplots
 from cmath import phase
 import scipy.special as spe
 import numpy as np
 import sys
-from scipy.interpolate import interp1d
+#from scipy.interpolate import interp1d
 from scipy.interpolate import RegularGridInterpolator
-pio.renderers.default='iframe'
+#pio.renderers.default='iframe'
 
 def ftheta(l, m, theta):
     C = np.sqrt((2.*l+1.) * spe.factorial(l-m) / 2. / spe.factorial(l+m))
@@ -26,15 +26,6 @@ def fphi(m, phi, part=None):
         return (-1)**m * np.sqrt(1./np.pi) * np.sin(m * phi)
     else:
         raise ValueError("The parameter part should be Re or Im.")
-
-def interpolate_2d(phi_val, theta_val, Y):
-    theta = np.linspace(0., np.pi, 50)
-    phi = np.linspace(0., 2.*np.pi, 100)
-    interp = RegularGridInterpolator((phi, theta), Y,
-                                 bounds_error=False, fill_value=None, method="quintic")
-    Y_val=interp((phi_val, theta_val))
-    return Y_val
-
 
 class spherical_harmonic:
     
@@ -263,7 +254,7 @@ class comb_ang_function(spherical_harmonic):
 
     def evaluate(self, theta, phi):
         interp = RegularGridInterpolator((self.phi, self.theta), self.Y,
-                                     bounds_error=False, fill_value=None)#, method="quintic")
+                                     bounds_error=False, fill_value=None, method="quintic")
         Y = interp((phi, theta))
         return 1.*Y
 

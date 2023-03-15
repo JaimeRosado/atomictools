@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 #import plotly.express as px
 import plotly.graph_objects as go
-import plotly.io as pio
+#import plotly.io as pio
 #from plotly.subplots import make_subplots
 import numpy as np
 import atomictools as at
-pio.renderers.default='iframe'
+#pio.renderers.default='iframe'
 
 def sph_to_cart(r, theta, phi):
     x = r*np.sin(theta)*np.cos(phi)
@@ -19,11 +19,6 @@ def cart_to_sph(x, y, z):
     theta = np.arccos(z/r)
     phi = np.arctan(y/x)
     return r, theta, phi
-
-def interpolate_3d(r, r_dist, r_val, phi_val, theta_val, Y):
-    Y_val = at.ang_functions.interpolate_2d(phi_val, theta_val, Y)
-    R_val = at.radial_functions.interpolate_1d(r, r_dist, r_val)
-    return R_val**2 * np.abs(Y_val)**2
 
 class orbital_hydrog():
     def __init__(self, n, l, m, part=None, Z=1, mu=1.):
@@ -66,13 +61,7 @@ class orbital_hydrog():
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
 
-        theta_lm = at.ftheta(l, m, theta)
-        phi_m = at.fphi(m, phi, part)
-
-        R_nl = at.radial(r, n, l, Z, mu)
-
-        self.prob = np.abs(theta_lm*phi_m)**2 * R_nl**2
-        self.prob2 = np.abs(self.evaluate(r, theta, phi))**2
+        self.prob = np.abs(self.evaluate(r, theta, phi))**2
 
     def evaluate(self, r, theta, phi):
         R = self.R.evaluate(r)
@@ -108,24 +97,6 @@ class orbital_hydrog():
             y=self.y.flatten(),
             z=self.z.flatten(),
             value=self.prob.flatten(),
-            opacity=0.1,
-            isomin=0.002*max_val,
-            isomax=0.99*max_val,
-            surface_count=100,
-            colorscale='viridis'
-            ))
-        fig.show()
-
-    def plot_volume2(self):
-        
-        min_val = np.min(self.prob2)
-        max_val = np.max(self.prob2)
-        
-        fig = go.Figure(data=go.Volume(
-            x=self.x.flatten(),
-            y=self.y.flatten(),
-            z=self.z.flatten(),
-            value=self.prob2.flatten(),
             opacity=0.1,
             isomin=0.002*max_val,
             isomax=0.99*max_val,
@@ -200,13 +171,8 @@ class orbital(orbital_hydrog):
             
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
-        self.r2 = r
-        self.theta2 = theta
-        self.phi2 = phi
         
-        #self.prob = np.abs(self.evaluate(r, theta, phi))**2
-        self.prob = np.abs(self.Y.evaluate(theta, phi))**2 * self.R.evaluate(r)**2
-
+        self.prob = np.abs(self.evaluate(r, theta, phi))**2
         
     def get_r(self, points=1):
             p = np.random.random(points)

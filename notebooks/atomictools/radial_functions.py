@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 #import plotly.express as px
 import plotly.graph_objects as go
-import plotly.io as pio
+#import plotly.io as pio
 #from plotly.subplots import make_subplots
 import scipy.special as spe
 import numpy as np
 from scipy.interpolate import interp1d
+from scipy.optimize import curve_fit
 #pio.renderers.default='iframe'
 
 def radial(r, n, l, Z, mu):
@@ -17,11 +18,6 @@ def radial(r, n, l, Z, mu):
     rho = 2. * mu * Z * r / n
     laguerre = spe.assoc_laguerre(rho, n-l-1, 2*l+1)
     return C * np.exp(-rho/2.) * rho**l * laguerre
-
-def interpolate_1d(r, r_dist, r_val):
-    interp = interp1d(r, r_dist, fill_value="extrapolate")
-    r_interp = interp(r_val)
-    return r_interp
 
 class R_hydrog:
     """
@@ -106,7 +102,7 @@ class R_hydrog:
         P2 = (r * R)**2
         integ =  P2.sum() * Dr
         return integ, r, R, P2
-    
+
     def evaluate(self, r):
         r = np.array(r)
         R = radial(r, self.n, self.l, self.Z, self.mu)
@@ -250,10 +246,19 @@ class R_num(R_hydrog):
         self.P2 = P**2
 
     def evaluate(self, r):
-        # TODO
+        r = np.array(r)
+        lnR1 = np.log(self.R[-1])
+        lnR2 = np.log(self.R[-2])
+        r1 = self.r[-1]
+        r2 = self.r[-2]
+        m = (lnR1 - lnR2) / (r1 - r2)
         interp = interp1d(self.r, self.R, fill_value="extrapolate")
         R = interp(r)
-        #R[R<0.] = 0. # For r>rmax
-        #TO DO: hacer extrapolación exponencial a partir de self.R[-1] y self.R[-2]
+        r_out = r>self.rmax
+        R[r_out] = np.exp(lnR1 + m*(r[r_out]-r1))
+
         return R
+
+
+
 

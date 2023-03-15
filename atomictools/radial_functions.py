@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #import plotly.express as px
 import plotly.graph_objects as go
-import plotly.io as pio
+#import plotly.io as pio
 #from plotly.subplots import make_subplots
 import scipy.special as spe
 import numpy as np
@@ -18,11 +18,6 @@ def radial(r, n, l, Z, mu):
     rho = 2. * mu * Z * r / n
     laguerre = spe.assoc_laguerre(rho, n-l-1, 2*l+1)
     return C * np.exp(-rho/2.) * rho**l * laguerre
-
-def interpolate_1d(r, r_dist, r_val):
-    interp = interp1d(r, r_dist, fill_value="extrapolate")
-    r_interp = interp(r_val)
-    return r_interp
 
 class R_hydrog:
     """
@@ -107,34 +102,10 @@ class R_hydrog:
         P2 = (r * R)**2
         integ =  P2.sum() * Dr
         return integ, r, R, P2
-    
-    def evaluate(self, r):
-        
-        
-        if len(r) < 10:
-            R=[]
-            for i in range(len(r)):
-                if r[i] < self.rmax:
-                    aux = np.array(r[i])
-                    interp = interp1d(self.r, self.R, fill_value="extrapolate")
-                    R.append(interp(aux))
 
-                elif r[i] > self.rmax: 
-                    #extrapolacion exponencial #1: ln R = a*r + b
-                                               #2: R = exp(a*r + b)
-                                               #3: R = exp(b)*exp(a*r)
-                            
-                    popt, pcov = curve_fit(lambda x, a, b: a*x + b, (self.r[-1], self.r[-2], self.r[-3]),
-                                           np.log((self.R[-1], self.R[-2], self.R[-3])), method='dogbox')
-                    
-                    r_val = np.exp(popt[1])*np.exp(popt[0]*r[i])
-                    
-                    R.append(r_val)
-        
-        else:
-            interp = interp1d(self.r, self.R, fill_value="extrapolate")
-            R = interp(r)
-            
+    def evaluate(self, r):
+        r = np.array(r)
+        R = radial(r, self.n, self.l, self.Z, self.mu)
         return R
 
     def plot_R(self):
@@ -273,5 +244,21 @@ class R_num(R_hydrog):
         self.R = R
         self.R2 = R**2
         self.P2 = P**2
+
+    def evaluate(self, r):
+        r = np.array(r)
+        lnR1 = np.log(self.R[-1])
+        lnR2 = np.log(self.R[-2])
+        r1 = self.r[-1]
+        r2 = self.r[-2]
+        m = (lnR1 - lnR2) / (r1 - r2)
+        interp = interp1d(self.r, self.R, fill_value="extrapolate")
+        R = interp(r)
+        r_out = r>self.rmax
+        R[r_out] = np.exp(lnR1 + m*(r[r_out]-r1))
+
+        return R
+
+
 
 

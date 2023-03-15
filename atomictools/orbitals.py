@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 #import plotly.express as px
 import plotly.graph_objects as go
-import plotly.io as pio
+#import plotly.io as pio
 #from plotly.subplots import make_subplots
 import numpy as np
 import atomictools as at
-pio.renderers.default='iframe'
+#pio.renderers.default='iframe'
 
 def sph_to_cart(r, theta, phi):
     x = r*np.sin(theta)*np.cos(phi)
@@ -61,12 +61,12 @@ class orbital_hydrog():
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
 
-        theta_lm = at.ftheta(l, m, theta)
-        phi_m = at.fphi(m, phi, part)
+        self.prob = np.abs(self.evaluate(r, theta, phi))**2
 
-        R_nl = at.radial(r, n, l, Z, mu)
-
-        self.prob = np.abs(theta_lm*phi_m)**2 * R_nl**2
+    def evaluate(self, r, theta, phi):
+        R = self.R.evaluate(r)
+        Y = self.Y.evaluate(theta, phi)
+        return R * Y
 
     def get_r(self, points=1):
         p = np.random.random(points)
@@ -98,7 +98,7 @@ class orbital_hydrog():
             z=self.z.flatten(),
             value=self.prob.flatten(),
             opacity=0.1,
-            isomin=0.001*max_val,
+            isomin=0.002*max_val,
             isomax=0.99*max_val,
             surface_count=100,
             colorscale='viridis'
@@ -134,3 +134,69 @@ class orbital_hydrog():
             )
         )
         fig.show()
+        
+        
+
+class orbital(orbital_hydrog):
+    def __init__(self, f_rad, f_ang):
+        
+        l=f_rad.l
+        m=f_ang.m
+        Z=f_rad.Z
+        
+        
+        self.R = f_rad
+        rmax = self.R.rmax
+        self.rmax = rmax
+        self.r = self.R.r
+        self.r_dist = self.R.P2.cumsum() * rmax / (self.R.npt-1)
+        self.r_dist /= self.r_dist[-1]
+        
+        self.Y=f_ang
+        self.theta = self.Y.theta
+        
+        if f_ang.switcher==True:
+            self.theta_dist = (self.Y.ftheta_lm**2 * np.sin(self.theta)).cumsum() * np.pi/49.
+            self.theta_dist /= self.theta_dist[-1]
+        
+        self.phi = self.Y.phi
+        
+        if f_ang.switcher==True:
+            part=self.Y.part
+            self.part=part
+        
+            if part is not None:
+                self.phi_dist = (self.Y.fphi_m**2).cumsum() * 2. * np.pi / 99.
+                self.phi_dist /= self.phi_dist[-1]
+            
+        self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
+        r, theta, phi = cart_to_sph(self.x, self.y, self.z)
+        
+        self.prob = np.abs(self.evaluate(r, theta, phi))**2
+        
+    def get_r(self, points=1):
+            p = np.random.random(points)
+            r = np.interp(p, self.r_dist, self.r)
+            return r
+    
+    def get_theta(self, points=1):
+            p = np.random.random(points)
+            
+            if self.Y.switcher == True:
+                theta = np.interp(p, self.theta_dist, self.theta)
+            elif self.Y.switcher == False:
+                theta = np.interp(p, np.abs(self.theta_dist), self.theta)
+            return theta
+    
+    def get_phi(self, points=1):
+            if self.part is None:
+                phi = np.random.random(points)*2.*np.pi
+                return phi
+            else:
+                p = np.random.random(points)
+                phi = np.interp(p, self.phi_dist, self.phi)
+                return phi
+        
+        
+
+

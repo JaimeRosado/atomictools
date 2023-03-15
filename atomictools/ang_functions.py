@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 #import plotly.express as px
 import plotly.graph_objects as go
-import plotly.io as pio
+#import plotly.io as pio
 #from plotly.subplots import make_subplots
 from cmath import phase
 import scipy.special as spe
 import numpy as np
 import sys
-pio.renderers.default='iframe'
+#from scipy.interpolate import interp1d
+from scipy.interpolate import RegularGridInterpolator
+#pio.renderers.default='iframe'
 
 def ftheta(l, m, theta):
     C = np.sqrt((2.*l+1.) * spe.factorial(l-m) / 2. / spe.factorial(l+m))
@@ -19,12 +21,11 @@ def fphi(m, phi, part=None):
     if part is None:
         return np.sqrt(1./(2.*np.pi)) * np.exp(1j * m * phi)
     elif part=="Re" or m==0:
-        return np.sqrt(1./np.pi) * np.cos(m * phi)
+        return (-1)**m * np.sqrt(1./np.pi) * np.cos(m * phi)
     elif part=="Im":
-        return np.sqrt(1./np.pi) * np.sin(m * phi)
+        return (-1)**m * np.sqrt(1./np.pi) * np.sin(m * phi)
     else:
         raise ValueError("The parameter part should be Re or Im.")
-
 
 class spherical_harmonic:
     
@@ -36,6 +37,8 @@ class spherical_harmonic:
         self.theta = theta
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
+        self.switcher=True
+        self.part = None
         
         # Computed results of ftheta() and fphi()
         self.ftheta_lm = ftheta(l, m, theta)
@@ -70,7 +73,8 @@ class spherical_harmonic:
         self.module_x = module * x
         self.module_y = module * y
         self.module_z = module * z
-
+    
+    
     def plot_prob(self):
         fig = go.Figure(data=[go.Surface(x=self.prob_x, y=self.prob_y, z=self.prob_z, 
                                          surfacecolor=self.prob, colorscale='Oranges')])
@@ -98,6 +102,13 @@ class spherical_harmonic:
   
         fig.show()
 
+    def evaluate(self, theta, phi):
+        theta = np.array(theta)
+        phi = np.array(phi)
+        ftheta_lm = ftheta(self.l, self.m, theta)       
+        fphi_m = fphi(self.m, phi)
+        return ftheta_lm * fphi_m
+
 
 class real_ang_function(spherical_harmonic):
 
@@ -110,6 +121,7 @@ class real_ang_function(spherical_harmonic):
         self.theta = theta
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
+        self.switcher=True
         
         if m==0 and part!="Re":
             print("For m=0, there is only real part.")
@@ -153,6 +165,13 @@ class real_ang_function(spherical_harmonic):
         self.module_x = module * x
         self.module_y = module * y
         self.module_z = module * z
+        
+    def evaluate(self, theta, phi):
+        theta = np.array(theta)
+        phi = np.array(phi)
+        ftheta_lm = ftheta(self.l, self.m, theta)       
+        fphi_m = fphi(self.m, phi, self.part)
+        return ftheta_lm * fphi_m
 
 
 class comb_ang_function(spherical_harmonic):
@@ -174,7 +193,7 @@ class comb_ang_function(spherical_harmonic):
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
         Y = np.zeros((100, 50), dtype='complex128')
-        
+        self.switcher=False
         check = []
         # Combination of spherical harmonics, i.e., list of (l, m)
         if all([len(f)==2 for f in functions]):
@@ -232,3 +251,10 @@ class comb_ang_function(spherical_harmonic):
         self.module_x = module * x
         self.module_y = module * y
         self.module_z = module * z
+
+    def evaluate(self, theta, phi):
+        interp = RegularGridInterpolator((self.phi, self.theta), self.Y,
+                                     bounds_error=False, fill_value=None, method="quintic")
+        Y = interp((phi, theta))
+        return 1.*Y
+
