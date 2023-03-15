@@ -1,5 +1,8 @@
 .ipynb_checkpoints
+/notebooks/ipynb_checkpoints
 /iframe_figures
+/notebooks/iframe_figures
 /__pycache__
 /atomictools/__pycache__
+/notebooks/atomictools/__pycache__
 .DS_Store
