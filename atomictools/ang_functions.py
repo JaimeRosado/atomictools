@@ -38,7 +38,6 @@ class spherical_harmonic:
         self.theta = theta
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
-        self.switcher=True
         self.part = None
         
         # Computed results of ftheta() and fphi()
@@ -140,7 +139,6 @@ class real_ang_function(spherical_harmonic):
         self.theta = theta
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
-        self.switcher=True
         
         if m==0 and part!="Re":
             print("For m=0, there is only real part.")
@@ -225,7 +223,6 @@ class comb_ang_function(spherical_harmonic):
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
         Y = np.zeros((100, 50), dtype='complex128')
-        self.switcher=False
         check = []
         # Combination of spherical harmonics, i.e., list of (l, m)
         if all([len(f)==2 for f in functions]):
