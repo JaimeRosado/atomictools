@@ -46,17 +46,10 @@ class orbital_hydrog():
         rmax = self.R.rmax
         self.rmax = rmax
         self.r = self.R.r
-        self.r_dist = self.R.P2.cumsum() * rmax / (self.R.npt-1)
-        self.r_dist /= self.r_dist[-1]
         
         self.theta = self.Y.theta
-        self.theta_dist = (self.Y.ftheta_lm**2 * np.sin(self.theta)).cumsum() * np.pi/49.
-        self.theta_dist /= self.theta_dist[-1]
-        
         self.phi = self.Y.phi
-        if part is not None:
-            self.phi_dist = (self.Y.fphi_m**2).cumsum() * 2. * np.pi / 99.
-            self.phi_dist /= self.phi_dist[-1]
+        
         
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
@@ -67,25 +60,6 @@ class orbital_hydrog():
         R = self.R.evaluate(r)
         Y = self.Y.evaluate(theta, phi)
         return R * Y
-
-    def get_r(self, points=1):
-        p = np.random.random(points)
-        r = np.interp(p, self.r_dist, self.r)
-        return r
-    
-    def get_theta(self, points=1):
-        p = np.random.random(points)
-        theta = np.interp(p, self.theta_dist, self.theta)
-        return theta
-    
-    def get_phi(self, points=1):
-        if self.part is None:
-            phi = np.random.random(points)*2.*np.pi
-            return phi
-        else:
-            p = np.random.random(points)
-            phi = np.interp(p, self.phi_dist, self.phi)
-            return phi
         
     def plot_volume(self):
         
@@ -110,9 +84,8 @@ class orbital_hydrog():
             print("The maximum number of points is 6.7e5.")
             points = 6.7e5
         points = int(points)
-        r = self.get_r(points)
-        theta = self.get_theta(points)
-        phi = self.get_phi(points)
+        r = self.R.get_r(points)
+        theta, phi = self.Y.get_angles(points)
         rmax = self.rmax
         
         x, y, z = sph_to_cart(r, theta, phi)
@@ -149,54 +122,16 @@ class orbital(orbital_hydrog):
         rmax = self.R.rmax
         self.rmax = rmax
         self.r = self.R.r
-        self.r_dist = self.R.P2.cumsum() * rmax / (self.R.npt-1)
-        self.r_dist /= self.r_dist[-1]
-        
+
         self.Y=f_ang
         self.theta = self.Y.theta
-        
-        if f_ang.switcher==True:
-            self.theta_dist = (self.Y.ftheta_lm**2 * np.sin(self.theta)).cumsum() * np.pi/49.
-            self.theta_dist /= self.theta_dist[-1]
-        
-        self.phi = self.Y.phi
-        
-        if f_ang.switcher==True:
-            part=self.Y.part
-            self.part=part
-        
-            if part is not None:
-                self.phi_dist = (self.Y.fphi_m**2).cumsum() * 2. * np.pi / 99.
-                self.phi_dist /= self.phi_dist[-1]
             
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
         
         self.prob = np.abs(self.evaluate(r, theta, phi))**2
         
-    def get_r(self, points=1):
-            p = np.random.random(points)
-            r = np.interp(p, self.r_dist, self.r)
-            return r
-    
-    def get_theta(self, points=1):
-            p = np.random.random(points)
-            
-            if self.Y.switcher == True:
-                theta = np.interp(p, self.theta_dist, self.theta)
-            elif self.Y.switcher == False:
-                theta = np.interp(p, np.abs(self.theta_dist), self.theta)
-            return theta
-    
-    def get_phi(self, points=1):
-            if self.part is None:
-                phi = np.random.random(points)*2.*np.pi
-                return phi
-            else:
-                p = np.random.random(points)
-                phi = np.interp(p, self.phi_dist, self.phi)
-                return phi
         
-        
+
 
 

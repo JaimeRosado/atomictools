@@ -94,7 +94,16 @@ class R_hydrog:
         # only for checking
         self._rmax = rmax
         self._integral = integral
-
+        
+        #calculation of probability distribution
+        self.r_dist = self.P2.cumsum() * self.rmax / (self.npt-1)
+        self.r_dist /= self.r_dist[-1]
+        
+    def get_r(self, points=1):
+        p = np.random.random(points)
+        r = np.interp(p, self.r_dist, self.r)
+        return r    
+    
     def _calculate(self, rm):
         Dr = rm / (self.npt-1)
         r = np.linspace(0., rm, self.npt)
