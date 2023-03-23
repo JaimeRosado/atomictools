@@ -62,7 +62,6 @@ class orbital_hydrog():
         return R * Y
         
     def plot_volume(self):
-        
         min_val = np.min(self.prob)
         max_val = np.max(self.prob)
         
@@ -112,7 +111,6 @@ class orbital_hydrog():
 
 class orbital(orbital_hydrog):
     def __init__(self, f_rad, f_ang):
-        
         l=f_rad.l
         m=f_ang.m
         Z=f_rad.Z
