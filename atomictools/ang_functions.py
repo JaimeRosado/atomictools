@@ -4,14 +4,14 @@
 import plotly.graph_objects as go
 #import plotly.io as pio
 #from plotly.subplots import make_subplots
-from cmath import phase
+#from cmath import phase
 import scipy.special as spe
 import numpy as np
-import sys
+#import sys
 #from scipy.interpolate import interp1d
 from scipy.interpolate import RegularGridInterpolator
 #pio.renderers.default='iframe'
-np.seterr(invalid='ignore')
+#np.seterr(invalid='ignore')
 
 def ftheta(l, m, theta):
     C = np.sqrt((2.*l+1.) * spe.factorial(l-m) / 2. / spe.factorial(l+m))
@@ -36,6 +36,8 @@ class spherical_harmonic:
         self.m = m
         theta = np.linspace(0., np.pi, 50)
         self.theta = theta
+        sin_theta = np.sin(theta)
+        sin_theta[-1] = 0. # the last theta is pi, but sin_theta is not exactly 0
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
         self.part = None
@@ -45,7 +47,7 @@ class spherical_harmonic:
         self.fphi_m = fphi(m, phi)
         
         # calculation of probability distributions
-        self.theta_dist = (self.ftheta_lm**2 * np.sin(self.theta)).cumsum() * np.pi/49.
+        self.theta_dist = (self.ftheta_lm**2 * sin_theta).cumsum() #* np.pi/49.
         self.theta_dist /= self.theta_dist[-1]
         
         # Y values, their absolute values, the square of them and phase
@@ -59,7 +61,6 @@ class spherical_harmonic:
         self.phase = phase
         
         # Cartesian coordinates for r=1
-        sin_theta = np.sin(theta)
         x = np.outer(np.cos(phi), sin_theta)
         y = np.outer(np.sin(phi), sin_theta)
         z = np.outer(np.ones_like(phi), np.cos(theta))
@@ -112,17 +113,17 @@ class spherical_harmonic:
         ftheta_lm = ftheta(self.l, self.m, theta)       
         fphi_m = fphi(self.m, phi)
         return ftheta_lm * fphi_m
-    
+
     def get_theta(self, points=1):
         p = np.random.random(points)
         theta = np.interp(p, self.theta_dist, self.theta)
         return theta
-    
+
     def get_phi(self, points=1):
-        phi = np.random.random(points)*2.*np.pi
+        phi = np.random.random(points) * 2. * np.pi
         return phi
-    
-    def get_angles(self, points):
+
+    def get_angles(self, points=1):
         theta = self.get_theta(points)
         phi = self.get_phi(points)
         return theta, phi
@@ -137,6 +138,8 @@ class real_ang_function(spherical_harmonic):
         self.m = m
         theta = np.linspace(0., np.pi, 50)
         self.theta = theta
+        sin_theta = np.sin(theta)
+        sin_theta[-1] = 0. # the last theta is pi, but sin_theta is not exactly 0
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
         
@@ -154,11 +157,11 @@ class real_ang_function(spherical_harmonic):
         self.fphi_m = fphi(m, phi, part)
         
         #calculation of theta's probability distribution
-        self.theta_dist = (self.ftheta_lm**2 * np.sin(self.theta)).cumsum() * np.pi/49.
+        self.theta_dist = (self.ftheta_lm**2 * sin_theta).cumsum() #* np.pi / 49.
         self.theta_dist /= self.theta_dist[-1]
         
         #calculation of phi's probability distribution
-        self.phi_dist = (self.fphi_m**2).cumsum() * 2. * np.pi / 99.
+        self.phi_dist = (self.fphi_m**2).cumsum() #* 2. * np.pi / 99.
         self.phi_dist /= self.phi_dist[-1]
         
         # Y values, their absolute values, the square of them and phase
@@ -172,7 +175,6 @@ class real_ang_function(spherical_harmonic):
         self.phase = phase
         
         # Cartesian coordinates for r=1
-        sin_theta = np.sin(theta)
         x = np.outer(np.cos(phi), sin_theta)
         y = np.outer(np.sin(phi), sin_theta)
         z = np.outer(np.ones_like(phi), np.cos(theta))
@@ -220,6 +222,8 @@ class comb_ang_function(spherical_harmonic):
         self.m = None
         theta = np.linspace(0., np.pi, 50)
         self.theta = theta
+        sin_theta = np.sin(theta)
+        sin_theta[-1] = 0. # the last theta is pi, but sin_theta is not exactly 0
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
         Y = np.zeros((100, 50), dtype='complex128')
@@ -258,33 +262,28 @@ class comb_ang_function(spherical_harmonic):
         self.module = module
         prob = module**2
         self.prob = prob
+        prob_sin_theta = prob * sin_theta
         phase = np.angle(Y)
         self.phase = phase
         
-        #calculation of probability distributions
-        theta_dist_aux = []
-        phi_dist_aux = []
-
-        d_phi = self.phi[1] - self.phi[0]
-        d_theta = self.theta[1] - self.theta[0]
-
-        for i in range(len(self.theta)):
-            theta_dist_aux.append(sum(self.prob[:,i])*d_phi)
-
-        for i in range(len(self.phi)):
-            phi_dist_aux.append(sum(self.prob[i,:])*d_theta)
-
-        theta_dist = np.array(theta_dist_aux).cumsum()
-        phi_dist = np.array(phi_dist_aux).cumsum()
-
-        theta_dist /= theta_dist[-1]
-        phi_dist /= phi_dist[-1]
-        
+        # auxiliary
+        phi_dist_t = np.cumsum(prob_sin_theta, axis=0) # cumsum over phi
+        norm_t = phi_dist_t[-1].copy() # sum over phi
+        # probability distribution of theta, averaged over phi
+        theta_dist = norm_t.cumsum() # sum over phi and cumsum over theta
+        norm = theta_dist[-1] # sum over theta and phi
+        theta_dist /= norm
         self.theta_dist = theta_dist
+        # probability distribution of phi, averaged over theta
+        phi_dist = np.sum(phi_dist_t, axis=1) # cumsumm over phi and sum over theta
+        phi_dist /= norm
         self.phi_dist = phi_dist
+        # probability distribution of phi for each theta value
+        norm_t[norm_t==0.] = 1. # prob_sin_theta=0 for some theta values
+        phi_dist_t /= norm_t
+        self.phi_dist_t = phi_dist_t
 
         # Cartesian coordinates for r=1
-        sin_theta = np.sin(theta)
         x = np.outer(np.cos(phi), sin_theta)
         y = np.outer(np.sin(phi), sin_theta)
         z = np.outer(np.ones_like(phi), np.cos(theta))
@@ -314,31 +313,25 @@ class comb_ang_function(spherical_harmonic):
         phi = np.interp(p, self.phi_dist, self.phi)
         return phi
     
-    def get_angles(self, points):
-        phis = []
-        thetas = []
+    def get_angles(self, points=1):
+        theta = self.get_theta(points) # 0 < theta < pi
+        d_th = np.pi / 49.
+        #index = (theta/d_th).astype(int) # 0 <= index <= 48 # rounded down
+        index = (np.rint(theta/d_th)).astype(int) # nearest int
+        phi_dist_t = self.phi_dist_t
+        phi = np.zeros(points)
+        p = np.random.random(points)
 
-        for i in range(points):
-            theta_index = np.array([])
-            
-            while np.size(theta_index)==0:
-
-                theta_aux = self.get_theta()
-                theta_index = np.where(abs(self.theta-theta_aux)<0.032)
-                
-            prob_dist = self.prob*np.sin(self.theta[theta_index])
-
-            dist_phi_i = prob_dist[:,theta_index].cumsum()*2*np.pi/100
-            dist_phi_i /= dist_phi_i[-1]
-
-            point = 1
-            p = np.random.random(point)
-            phi_fin = float(np.interp(p, dist_phi_i, self.phi))
-            phis.append(phi_fin)
-
-            thetas.append(float(theta_aux))
-
-        return thetas, phis
-        
+        for point, (i, th_point, p_point) in enumerate(zip(index, theta, p)):
+            # distribution taken for the nearest theta
+            phi_dist = phi_dist_t[:, i]
+            phi[point] = np.interp(p_point, phi_dist, self.phi)
+            # interpolated distribution from the lower and higher theta values
+            #phi_dist = phi_dist_t[:, i].copy
+            #delta_dist = phi_dist_t[:, i+1] - phi_dist # i <=48
+            #phi_dist += delta_dist * (th_point - self.theta[i]) / d_th
+            #phi_dist /= phi_dist[-1]
+            #phi[point] = np.interp(p_point, phi_dist, self.phi)
+        return theta, phi
 
 
