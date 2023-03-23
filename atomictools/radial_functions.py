@@ -7,7 +7,6 @@ import plotly.graph_objects as go
 import scipy.special as spe
 import numpy as np
 from scipy.interpolate import interp1d
-from scipy.optimize import curve_fit
 #pio.renderers.default='iframe'
 
 def radial(r, n, l, Z, mu):
@@ -265,7 +264,6 @@ class R_num(R_hydrog):
         R = interp(r)
         r_out = r>self.rmax
         R[r_out] = np.exp(lnR1 + m*(r[r_out]-r1))
-
         return R
 
 
