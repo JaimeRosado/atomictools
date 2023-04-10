@@ -142,29 +142,6 @@ class comb_orbital(orbital_hydrog):
         
         rmax = max([orb.rmax for orb in orbitals])
         self.rmax = rmax
-        self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
-        r, theta, phi = cart_to_sph(self.x, self.y, self.z)
-        
-        orbital = np.zeros([40,40,40], dtype = 'complex128')
-        
-        for f, c in zip(orbitals, coefficients):
-            orbital += c * f.wave_func
-            
-        prob = np.abs(orbital)**2
-        norm = prob.sum() * (rmax/20.)**3
-        prob /= norm
-        self.prob = prob
-
-
-class comb_orbital(orbital_hydrog):
-    def __init__(self, orbitals, coefficients):
-        
-        if len(orbitals)!=len(coefficients):
-            raise ValueError(
-                "The lists of functions and coefficients must have the same length.")
-        
-        rmax = max([orb.rmax for orb in orbitals])
-        self.rmax = rmax
         self.axis = np.mgrid[-rmax:rmax:40j]
         self.delta = 2.*rmax/39.
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
