@@ -45,16 +45,15 @@ class orbital_hydrog():
         
         rmax = self.R.rmax
         self.rmax = rmax
-        self.r = self.R.r
-        
-        self.theta = self.Y.theta
-        self.phi = self.Y.phi
-        
+        #self.r = self.R.r
+        #self.theta = self.Y.theta
+        #self.phi = self.Y.phi
         
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
-
-        self.prob = np.abs(self.evaluate(r, theta, phi))**2
+        
+        self.orbital = self.evaluate(r, theta, phi)
+        self.prob = np.abs(self.orbital)**2
 
     def evaluate(self, r, theta, phi):
         R = self.R.evaluate(r)
@@ -77,17 +76,20 @@ class orbital_hydrog():
             colorscale='viridis'
             ))
         fig.show()
-        
+
+    def get_points(self, points=1):
+        r = self.R.get_r(points)
+        theta, phi = self.Y.get_angles(points)
+        return sph_to_cart(r, theta, phi)
+
     def plot_scatter(self, points=100000, op=0.01):
         if points>6.7e5:
             print("The maximum number of points is 6.7e5.")
             points = 6.7e5
         points = int(points)
-        r = self.R.get_r(points)
-        theta, phi = self.Y.get_angles(points)
         rmax = self.rmax
         
-        x, y, z = sph_to_cart(r, theta, phi)
+        x, y, z = self.get_points(points)
         fig=go.Figure(data=go.Scatter3d(
             x=x,
             y=y,
@@ -111,25 +113,111 @@ class orbital_hydrog():
 
 class orbital(orbital_hydrog):
     def __init__(self, f_rad, f_ang):
-        l=f_rad.l
-        m=f_ang.m
-        Z=f_rad.Z
-        
+        #l = f_rad.l
+        #m = f_ang.m
+        #Z = f_rad.Z      
         
         self.R = f_rad
         rmax = self.R.rmax
         self.rmax = rmax
-        self.r = self.R.r
+        #self.r = self.R.r
 
-        self.Y=f_ang
-        self.theta = self.Y.theta
+        self.Y = f_ang
+        #self.theta = self.Y.theta
             
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
         
-        self.prob = np.abs(self.evaluate(r, theta, phi))**2
+        self.orbital = self.evaluate(r, theta, phi)
+        self.prob = np.abs(self.orbital)**2
+
+
+
+class comb_orbital(orbital_hydrog):
+    def __init__(self, orbitals, coefficients):
         
+        if len(orbitals)!=len(coefficients):
+            raise ValueError(
+                "The lists of functions and coefficients must have the same length.")
         
+        rmax = max([orb.rmax for orb in orbitals])
+        self.rmax = rmax
+        self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
+        r, theta, phi = cart_to_sph(self.x, self.y, self.z)
+        
+        orbital = np.zeros([40,40,40], dtype = 'complex128')
+        
+        for f, c in zip(orbitals, coefficients):
+            orbital += c * f.wave_func
+            
+        prob = np.abs(orbital)**2
+        norm = prob.sum() * (rmax/20.)**3
+        prob /= norm
+        self.prob = prob
 
 
+class comb_orbital(orbital_hydrog):
+    def __init__(self, orbitals, coefficients):
+        
+        if len(orbitals)!=len(coefficients):
+            raise ValueError(
+                "The lists of functions and coefficients must have the same length.")
+        
+        rmax = max([orb.rmax for orb in orbitals])
+        self.rmax = rmax
+        self.axis = np.mgrid[-rmax:rmax:40j]
+        self.delta = 2.*rmax/39.
+        self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
+        #r, theta, phi = cart_to_sph(self.x, self.y, self.z)
+        
+        orbital = np.zeros([40,40,40], dtype = 'complex128')
+        
+        for orb, c in zip(orbitals, coefficients):
+            orbital += c * orb.orbital
+            
+        prob = np.abs(orbital)**2
+        norm = prob.sum() * (self.delta)**3
+        prob /= norm
+        self.prob = prob
+        orbital /= np.sqrt(norm)
+        self.orbital = orbital
 
+        # probability distribution of z, averaged over x and y
+        z_dist = prob.sum(axis=0).sum(axis=0).cumsum() # sum over x and y and cumsum over z
+        norm = z_dist[-1].copy() # sum over x, y, z
+        z_dist /= norm
+        self.z_dist = z_dist
+        # probability distribution of y for a given z, averaged over x
+        y_dist_z = prob.sum(axis=0).cumsum(axis=0) # sum over x and cumsum over y
+        norm = y_dist_z[-1].copy() # sum over x and y
+        y_dist_z /= norm
+        self.y_dist_z = y_dist_z
+        # probability distribution of x for given y and z
+        x_dist_yz = prob.cumsum(axis=0) # cumsum over x
+        norm = x_dist_yz[-1].copy() # sum over x
+        x_dist_yz /= norm
+        self.x_dist_yz = x_dist_yz
+
+    def get_points(self, points=1):
+        pz = np.random.random(points)
+        z = np.interp(pz, self.z_dist, self.axis)
+        index = (np.rint(z/self.delta)).astype(int) # nearest int
+        y_dist_z = self.y_dist_z
+        y = np.zeros(points)
+        py = np.random.random(points)
+        x_dist_yz = self.x_dist_yz
+        x = np.zeros(points)
+        px = np.random.random(points)
+
+        for point, (i, z_point, py_point, px_point) in enumerate(zip(index, z, py, px)):
+            # distribution of y taken for the nearest z
+            y_dist = y_dist_z[:, i].copy()
+            y_point = np.interp(py_point, y_dist, self.axis)
+            y[point] = y_point
+            j = (np.rint(y_point/self.delta)).astype(int) # nearest int
+            # distribution of x taken for the nearest y, z
+            x_dist = x_dist_yz[:, j, i].copy()
+            x_point = np.interp(px_point, x_dist, self.axis)
+            x[point] = x_point
+
+        return x, y, z

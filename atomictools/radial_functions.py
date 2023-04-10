@@ -91,8 +91,8 @@ class R_hydrog:
         self.P2 = P2
 
         # only for checking
-        self._rmax = rmax
-        self._integral = integral
+        #self._rmax = rmax
+        #self._integral = integral
         
         #calculation of probability distribution
         self.r_dist = self.P2.cumsum() * self.rmax / (self.npt-1)

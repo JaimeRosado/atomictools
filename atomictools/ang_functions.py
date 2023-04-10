@@ -57,6 +57,8 @@ class spherical_harmonic:
         self.module = module
         prob = module**2
         self.prob = prob
+        #prob_sin_theta = prob * sin_theta
+        #self.prob_sin_theta = prob_sin_theta
         phase = np.angle(Y)
         self.phase = phase
         
@@ -171,6 +173,8 @@ class real_ang_function(spherical_harmonic):
         self.module = module
         prob = Y**2
         self.prob = prob
+        #prob_sin_theta = prob * sin_theta
+        #self.prob_sin_theta = prob_sin_theta
         phase = np.angle(Y)
         self.phase = phase
         
@@ -263,6 +267,7 @@ class comb_ang_function(spherical_harmonic):
         prob = module**2
         self.prob = prob
         prob_sin_theta = prob * sin_theta
+        self.prob_sin_theta = prob_sin_theta
         phase = np.angle(Y)
         self.phase = phase
         
@@ -301,7 +306,15 @@ class comb_ang_function(spherical_harmonic):
         self.module_x = module * x
         self.module_y = module * y
         self.module_z = module * z
-
+        
+#    def check_norm(self):
+#        d_th = np.pi/49
+#        d_phi = 2*np.pi/100
+#        
+#        dist_aux = self.prob_sin_theta*d_th*d_phi
+#        suma = dist_aux.sum()
+#        print(suma)
+        
     def evaluate(self, theta, phi):
         interp = RegularGridInterpolator((self.phi, self.theta), self.Y,
                                      bounds_error=False, fill_value=None, method="quintic")
