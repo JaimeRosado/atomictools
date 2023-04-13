@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 #from plotly.subplots import make_subplots
 import numpy as np
 import atomictools as at
-from scipy.interpolate import interp1d
+#from scipy.interpolate import interp1d
 #pio.renderers.default='iframe'
 
 def sph_to_cart(r, theta, phi):
@@ -83,7 +83,7 @@ class orbital_hydrog():
         theta, phi = self.Y.get_angles(points)
         return sph_to_cart(r, theta, phi)
 
-    def plot_scatter(self, points=100000, op=0.01):
+    def plot_scatter(self, points=10000, op=0.05):
         if points>6.7e5:
             print("The maximum number of points is 6.7e5.")
             points = 6.7e5
