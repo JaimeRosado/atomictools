@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 #from plotly.subplots import make_subplots
 import numpy as np
 import atomictools as at
-#from scipy.interpolate import interp1d
+from scipy.interpolate import interpn
 #pio.renderers.default='iframe'
 
 def sph_to_cart(r, theta, phi):
@@ -134,23 +134,18 @@ class orbital(orbital_hydrog):
 
 
 
-class comb_orbital(orbital_hydrog):
-    def __init__(self, orbitals, coefficients, centers=None):
+class hybrid_orbital(orbital_hydrog):
+    def __init__(self, orbitals, coefficients):
         
         if len(orbitals)!=len(coefficients):
             raise ValueError(
                 "The lists of functions and coefficients must have the same length.")
-        if centers is not None:
-            if len(orbitals)!=len(centers):
-                raise ValueError(
-                    "The lists of functions and centers must have the same length.")
-        
+    
         rmax = max([orb.rmax for orb in orbitals])
         self.rmax = rmax
         self.axis = np.mgrid[-rmax:rmax:40j]
         self.delta = 2. * rmax / 39.
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
-        #r, theta, phi = cart_to_sph(self.x, self.y, self.z)
         
         orbital = np.zeros([40,40,40], dtype = 'complex128')
         
@@ -181,6 +176,13 @@ class comb_orbital(orbital_hydrog):
         x_dist_yz /= norm
         self.x_dist_yz = x_dist_yz
 
+    def evaluate(self, x, y, z):
+        orb_val = interpn((self.axis, self.axis, self.axis), self.orbital, (x, y, z))
+        print("The wave function value in [",x,",",y,",",z,"] is ", orb_val)
+        prob_val = interpn((self.axis, self.axis, self.axis), self.prob, (x, y, z))
+        print("The probability value in [",x,",",y,",",z,"] is ", prob_val)
+        return 1.*orb_val, 1.*prob_val    
+    
     def get_points(self, points=1):
         pz = np.random.random(points)
         z = np.interp(pz, self.z_dist, self.axis)
@@ -207,3 +209,95 @@ class comb_orbital(orbital_hydrog):
 
         return x, y, z
     
+    
+class molecular_orbital(hybrid_orbital):
+    def __init__(self, orbitals, coefficients, centers):
+        
+        if len(orbitals)!=len(centers):
+            raise ValueError(
+                "The lists of functions and centers must have the same length.")
+        
+        rmax = max([orb.rmax for orb in orbitals])
+        self.rmax = rmax
+        x_rmax, y_rmax, z_rmax = self.rmax, self.rmax, self.rmax
+        
+        for i in range(len(centers)):
+            x_rmax += centers[i][0]
+            y_rmax += centers[i][1]
+            z_rmax += centers[i][2]
+        
+        self.x_rmax = x_rmax
+        self.y_rmax = y_rmax
+        self.z_rmax = z_rmax
+        
+        self.x_axis = np.mgrid[-x_rmax:x_rmax:40j]
+        self.y_axis = np.mgrid[-y_rmax:y_rmax:40j]
+        self.z_axis = np.mgrid[-z_rmax:z_rmax:40j]
+        
+        self.delta_x = 2. * x_rmax / 39.
+        self.delta_y = 2. * y_rmax / 39.
+        self.delta_z = 2. * z_rmax / 39.
+        
+        self.x, self.y, self.z = np.mgrid[-x_rmax:x_rmax:40j, -y_rmax:y_rmax:40j, -z_rmax:z_rmax:40j]
+            
+        orbital = np.zeros([40,40,40], dtype = 'complex128')
+        
+        for orb, c in zip(orbitals, coefficients):
+            orbital += c * orb.orbital
+            
+        prob = np.abs(orbital)**2
+        norm = prob.sum() * self.delta_x * self.delta_y * self.delta_z
+        self.norm = norm
+        prob /= norm
+        self.prob = prob
+        orbital /= np.sqrt(norm)
+        self.orbital = orbital
+        
+        # probability distribution of z, averaged over x and y
+        z_dist = prob.sum(axis=0).sum(axis=0).cumsum() # sum over x and y and cumsum over z
+        norm = z_dist[-1].copy() # sum over x, y, z
+        z_dist /= norm
+        self.z_dist = z_dist
+        # probability distribution of y for a given z, averaged over x
+        y_dist_z = prob.sum(axis=0).cumsum(axis=0) # sum over x and cumsum over y
+        norm = y_dist_z[-1].copy() # sum over x and y
+        y_dist_z /= norm
+        self.y_dist_z = y_dist_z
+        # probability distribution of x for given y and z
+        x_dist_yz = prob.cumsum(axis=0) # cumsum over x
+        norm = x_dist_yz[-1].copy() # sum over x
+        x_dist_yz /= norm
+        self.x_dist_yz = x_dist_yz
+        
+    def evaluate(self, x, y, z):
+        orb_val = interpn((self.x_axis, self.y_axis, self.z_axis), self.orbital, (x, y, z))
+        print("The wave function value in [",x,",",y,",",z,"] is ", orb_val)
+        prob_val = interpn((self.x_axis, self.y_axis, self.z_axis), self.prob, (x, y, z))
+        print("The probability value in [",x,",",y,",",z,"] is ", prob_val)
+        return 1.*orb_val, 1.*prob_val
+    
+    def get_points(self, points=1):
+        pz = np.random.random(points)
+        z = np.interp(pz, self.z_dist, self.z_axis)
+
+        index = (np.rint((z-self.z_rmax)/self.delta_z)).astype(int) # nearest int
+        y_dist_z = self.y_dist_z
+        y = np.zeros(points)
+        py = np.random.random(points)
+        x_dist_yz = self.x_dist_yz
+        x = np.zeros(points)
+        px = np.random.random(points)
+
+        for point, (i, z_point, py_point, px_point) in enumerate(zip(index, z, py, px)):
+            # distribution of y taken for the nearest z
+            y_dist = y_dist_z[:,i].copy()
+            y_point = np.interp(py_point, y_dist, self.y_axis)
+            y[point] = y_point
+            
+            j = (np.rint((y_point-self.y_rmax)/self.delta_y)).astype(int) # nearest int
+            # distribution of x taken for the nearest y, z
+            x_dist = x_dist_yz[:,j,i].copy()
+            x_point = np.interp(px_point, x_dist, self.x_axis)
+            x[point] = x_point
+
+        return x, y, z

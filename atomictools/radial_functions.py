@@ -252,6 +252,14 @@ class R_num(R_hydrog):
         self.R = R
         self.R2 = R**2
         self.P2 = P**2
+        
+        #calculation of probability distribution
+        d_r = self.rmax/len(r)
+        self.r_linear = np.arange(0, self.rmax, d_r)
+        interp = interp1d(self.r, self.P2, kind = 'cubic', bounds_error='false')
+        self.P2_linear = interp(self.r_linear)
+        self.r_dist = self.P2_linear.cumsum() * self.rmax / (self.npt-1)
+        self.r_dist /= self.r_dist[-1]
 
     def evaluate(self, r):
         r = np.array(r)
