@@ -135,18 +135,20 @@ class orbital(orbital_hydrog):
 
 
 class comb_orbital(orbital_hydrog):
-    def __init__(self, orbitals, coefficients):
+    def __init__(self, orbitals, coefficients, centers=None):
         
         if len(orbitals)!=len(coefficients):
             raise ValueError(
                 "The lists of functions and coefficients must have the same length.")
+        if centers is not None:
+            if len(orbitals)!=len(centers):
+                raise ValueError(
+                    "The lists of functions and centers must have the same length.")
         
         rmax = max([orb.rmax for orb in orbitals])
         self.rmax = rmax
         self.axis = np.mgrid[-rmax:rmax:40j]
-        #self.axis = np.linspace(-rmax, rmax, 40)
         self.delta = 2. * rmax / 39.
-        self.delta_aux = 2. * rmax / 39.
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         #r, theta, phi = cart_to_sph(self.x, self.y, self.z)
         
@@ -182,10 +184,8 @@ class comb_orbital(orbital_hydrog):
     def get_points(self, points=1):
         pz = np.random.random(points)
         z = np.interp(pz, self.z_dist, self.axis)
-        
-        #interp_z = interp1d(self.z_dist, self.axis, kind = 'linear', fill_value = 'extrapolate')
-        #z = interp_z(pz)
-        index = (np.rint((z-self.rmax)/self.delta_aux)).astype(int) # nearest int
+
+        index = (np.rint((z-self.rmax)/self.delta)).astype(int) # nearest int
         y_dist_z = self.y_dist_z
         y = np.zeros(points)
         py = np.random.random(points)
@@ -197,16 +197,12 @@ class comb_orbital(orbital_hydrog):
             # distribution of y taken for the nearest z
             y_dist = y_dist_z[:,i].copy()
             y_point = np.interp(py_point, y_dist, self.axis)
-            #interp_y = interp1d(y_dist, self.axis, kind = 'linear', fill_value='extrapolate')
-            #y_point = interp_y(py_point)
             y[point] = y_point
             
-            j = (np.rint((y_point-self.rmax)/self.delta_aux)).astype(int) # nearest int
+            j = (np.rint((y_point-self.rmax)/self.delta)).astype(int) # nearest int
             # distribution of x taken for the nearest y, z
             x_dist = x_dist_yz[:,j,i].copy()
             x_point = np.interp(px_point, x_dist, self.axis)
-            #interp_x = interp1d(x_dist, self.axis,kind = 'linear', fill_value = 'extrapolate')
-            #x_point = interp_x(px_point)
             x[point] = x_point
 
         return x, y, z
