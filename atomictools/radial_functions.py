@@ -13,7 +13,7 @@ def radial(r, n, l, Z, mu):
     # Evaluate the radial function R of a hydrogenic atom at r
     # r is in atomic units and can be an array
     # Z is the nuclear charge and mu is the reduced mass in atomic units
-    C = np.sqrt((2.*mu/n)**3 * spe.factorial(n-l-1) / (2.*n*spe.factorial(n+l)))
+    C = np.sqrt((2.*mu*Z/n)**3 * spe.factorial(n-l-1) / (2.*n*spe.factorial(n+l)))
     rho = 2. * mu * Z * r / n
     laguerre = spe.assoc_laguerre(rho, n-l-1, 2*l+1)
     return C * np.exp(-rho/2.) * rho**l * laguerre
