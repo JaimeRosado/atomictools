@@ -46,6 +46,7 @@ class orbital_hydrog():
         
         rmax = self.R.rmax
         self.rmax = rmax
+        self.axis = np.mgrid[-rmax:rmax:40j]
         #self.r = self.R.r
         #self.theta = self.Y.theta
         #self.phi = self.Y.phi
@@ -239,11 +240,18 @@ class molecular_orbital(hybrid_orbital):
         self.delta_z = 2. * z_rmax / 39.
         
         self.x, self.y, self.z = np.mgrid[-x_rmax:x_rmax:40j, -y_rmax:y_rmax:40j, -z_rmax:z_rmax:40j]
-            
-        orbital = np.zeros([40,40,40], dtype = 'complex128')
         
-        for orb, c in zip(orbitals, coefficients):
-            orbital += c * orb.orbital
+        orbital = np.zeros([40,40,40], dtype = 'complex128')
+                
+        for orb, c, cents in zip(orbitals, coefficients, centers):
+            x_aux = self.x - cents[0]
+            y_aux = self.y - cents[1]
+            z_aux = self.z - cents[2]
+            
+            self.x_aux = x_aux
+            
+            r, theta, phi = cart_to_sph(x_aux, y_aux, z_aux)
+            orbital += c * orb.evaluate(r, theta, phi)
             
         prob = np.abs(orbital)**2
         norm = prob.sum() * self.delta_x * self.delta_y * self.delta_z
