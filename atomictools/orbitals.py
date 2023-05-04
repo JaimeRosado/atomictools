@@ -18,7 +18,7 @@ def sph_to_cart(r, theta, phi):
 def cart_to_sph(x, y, z):
     r = np.sqrt(x**2 + y**2 + z**2)
     theta = np.arccos(z/r)
-    phi = np.arctan2(x, y)
+    phi = np.arctan2(y, x)
     return r, theta, phi
 
 class orbital_hydrog():
