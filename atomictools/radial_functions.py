@@ -234,7 +234,7 @@ class R_num(R_hydrog):
             Z, N, H, D, L, E, rmc, npt = np.loadtxt(file, skiprows=5, unpack=True, max_rows=1)
         self.Z = Z
         self.l = L
-        self.npt = npt
+        self.npt = 500
         self.rmax = rmc
 
         data_set = np.loadtxt(file, skiprows=8)
@@ -242,33 +242,39 @@ class R_num(R_hydrog):
         P = data_set[:,1]
         R = P / r
         r = np.append(0., r)
-        P = np.append(0., P)
+        #P = np.append(0., P)
         R = np.append(0., R)
         # Only s functions
         if L==0:
             R[0] = R[1]
+        self._r = r
+        #self.P = P
+        self._R = R
+        #self.R2 = R**2
+        #self.P2 = P**2
+        
+        #calculation of functions (linear scale)
+        d_r = self.rmax/len(r)
+        r = np.linspace(0., rm, self.npt)
+        R = self.evaluate(r)
         self.r = r
-        self.P = P
         self.R = R
         self.R2 = R**2
-        self.P2 = P**2
-        
+        self.P = r * R
+        self.P2 = P2
+
         #calculation of probability distribution
-        d_r = self.rmax/len(r)
-        self.r_linear = np.arange(0, self.rmax, d_r)
-        interp = interp1d(self.r, self.P2, kind = 'cubic', bounds_error='false')
-        self.P2_linear = interp(self.r_linear)
-        self.r_dist = self.P2_linear.cumsum() * self.rmax / (self.npt-1)
+        self.r_dist = self.P2.cumsum() * self.rmax / (self.npt-1)
         self.r_dist /= self.r_dist[-1]
 
     def evaluate(self, r):
         r = np.array(r)
-        lnR1 = np.log(self.R[-1])
-        lnR2 = np.log(self.R[-2])
-        r1 = self.r[-1]
-        r2 = self.r[-2]
+        lnR1 = np.log(self._R[-1])
+        lnR2 = np.log(self._R[-2])
+        r1 = self._r[-1]
+        r2 = self._r[-2]
         m = (lnR1 - lnR2) / (r1 - r2)
-        interp = interp1d(self.r, self.R, fill_value="extrapolate")
+        interp = interp1d(self._r, self._R, fill_value="extrapolate")
         R = interp(r)
         r_out = r>self.rmax
         R[r_out] = np.exp(lnR1 + m*(r[r_out]-r1))
