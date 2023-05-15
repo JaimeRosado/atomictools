@@ -204,9 +204,9 @@ class hybrid_orbital(orbital_hydrog):
     def evaluate(self, x, y, z):
         orb_val = interpn((self.x_axis, self.y_axis, self.z_axis), self.orbital, (x, y, z))
         print("The wave function value in [",x,",",y,",",z,"] is ", orb_val)
-        prob_val = interpn((self.x_axis, self.y_axis, self.z_axis), self.prob, (x, y, z))
-        print("The probability value in [",x,",",y,",",z,"] is ", prob_val)
-        return 1.*orb_val, 1.*prob_val 
+        #prob_val = interpn((self.x_axis, self.y_axis, self.z_axis), self.prob, (x, y, z))
+        #print("The probability value in [",x,",",y,",",z,"] is ", prob_val)
+        return 1.*orb_val#, 1.*prob_val 
 
     def get_points(self, points=1):
         pz = np.random.random(points)
