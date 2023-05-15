@@ -255,13 +255,13 @@ class R_num(R_hydrog):
         
         #calculation of functions (linear scale)
         d_r = self.rmax/len(r)
-        r = np.linspace(0., rm, self.npt)
+        r = np.linspace(0., rmc, self.npt)
         R = self.evaluate(r)
         self.r = r
         self.R = R
         self.R2 = R**2
         self.P = r * R
-        self.P2 = P2
+        self.P2 = self.P**2
 
         #calculation of probability distribution
         self.r_dist = self.P2.cumsum() * self.rmax / (self.npt-1)
