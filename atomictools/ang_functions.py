@@ -210,7 +210,7 @@ class real_ang_function(spherical_harmonic):
         return phi
 
 
-class comb_ang_function(spherical_harmonic):
+class comb_ang_function(real_ang_function):
     
     def __init__(self, functions, coefficients):
         if len(functions)!=len(coefficients):
@@ -320,11 +320,6 @@ class comb_ang_function(spherical_harmonic):
                                      bounds_error=False, fill_value=None, method="quintic")
         Y = interp((phi, theta))
         return 1.*Y
-    
-    def get_phi(self, points=1):
-        p = np.random.random(points)
-        phi = np.interp(p, self.phi_dist, self.phi)
-        return phi
     
     def get_angles(self, points=1):
         theta = self.get_theta(points) # 0 < theta < pi
