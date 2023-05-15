@@ -170,11 +170,12 @@ class hybrid_orbital(orbital_hydrog):
         self.delta_y = delta
         self.delta_z = delta
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
+        r, theta, phi = cart_to_sph(self.x, self.y, self.z)
         
         orbital = np.zeros([40,40,40], dtype = 'complex128')
         
         for orb, c in zip(orbitals, coefficients):
-            orbital += c * orb.orbital
+            orbital += c * orb.evaluate(r, theta, phi)
             
         prob = np.abs(orbital)**2
         norm = prob.sum() * (delta)**3
