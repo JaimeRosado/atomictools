@@ -203,11 +203,10 @@ class R_hydrog:
     
     #Obtaining the expected value for r**k   
     def expected_rpower(self,k): #using the trapezoid method
-        
-        it=0
+
         h=self.dr
-        I=(self.integrand(k,it,0.)+self.integrand(k,it,self.rmax))/2
-        for i in range(1,self.npt):
+        I=(self.integrand(k,0.,0.)+self.integrand(k,self.npt-1,self.rmax))/2
+        for i in range(1,self.npt-1):
             I+=self.integrand(k,i,i*h)
         return I*h
         
@@ -216,10 +215,9 @@ class R_hydrog:
     #Obtaining the expected value of a function that depends on r
     def expected_f(self,f_given): #using the trapezoid method
         
-        it=0
         h=self.dr
-        I=(self.integrand_(f_given,it,0.)+self.integrand_(f_given,it,self.rmax))/2
-        for i in range(1,self.npt):
+        I=(self.integrand_(f_given,0.,0.)+self.integrand_(f_given,self.npt-1,self.rmax))/2
+        for i in range(1,self.npt-1):
             I+=self.integrand_(f_given,i,i*h)
         return I*h
     
