@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 #import plotly.io as pio
 #from plotly.subplots import make_subplots
 import scipy.special as spe
+import scipy.integrate as spint
 import numpy as np
 from scipy.interpolate import interp1d
 #pio.renderers.default='iframe'
@@ -46,7 +47,7 @@ class R_hydrog:
         R^2.
     P : array
         r * R.
-    P2 : arra
+    P2 : array
         P^2.
         
     Methods
@@ -59,6 +60,10 @@ class R_hydrog:
         Plot P = r * R.
     Plot_P2()
         Plot P^2.
+    Expected_rpower(k)
+        Return the expected value of r**k
+    Expected_f(f)
+        Return the expected value of a given function f(r)
     """
     def __init__(self, n, l, Z=1, mu=1.):
         self.n = n         
@@ -68,7 +73,7 @@ class R_hydrog:
         self.mu = mu
 
         # Calculate iteratively the upper limit of r such that
-        # the integration of P^2 is between 0.9999 and 0.99999
+            # the integration of P^2 is between 0.9999 and 0.99999
         rm = 3. * self.n**2 / self.Z / self.mu
         rmax = np.array([])
         integral = np.array([])
@@ -89,16 +94,18 @@ class R_hydrog:
         self.R2 = R**2
         self.P = r * R
         self.P2 = P2
+        self.dr = r[1]-r[0]
 
         # only for checking
         #self._rmax = rmax
         #self._integral = integral
         
         #calculation of probability distribution
-        self.r_dist = self.P2.cumsum() * self.rmax / (self.npt-1)
+        self.r_dist = self.P2.cumsum() *  self.rmax / (self.npt-1)
         self.r_dist /= self.r_dist[-1]
         
-    def get_r(self, points=1):
+        
+    def get_r(self, points=1):    
         p = np.random.random(points)
         r = np.interp(p, self.r_dist, self.r)
         return r    
@@ -111,7 +118,7 @@ class R_hydrog:
         integ =  P2.sum() * Dr
         return integ, r, R, P2
 
-    def evaluate(self, r):
+    def evaluate(self, r): 
         r = np.array(r)
         R = radial(r, self.n, self.l, self.Z, self.mu)
         return R
@@ -175,7 +182,49 @@ class R_hydrog:
            yaxis_title="$$P^2$$")
         
         fig.show()
-
+    
+    #Definition of the integrand for the calculation of expected values of r**k
+    def integrand(self,k,it,r_value):
+        
+        return self.P2[it]*r_value**k
+    
+       #R = radial(r, self.n, self.l, self.Z, self.mu)
+       #P2 = (r * R)**2
+       #if f is None:
+       #    return P2*r
+       #else: 
+       #    return P2*f(r) 
+    
+    #Definition of the integrand for the calculation of expected values of a given function f(r)    
+    def integrand_(self,f_given,it,r_value):
+        
+        return self.P2[it]*f_given(r_value)      
+      
+    
+    #Obtaining the expected value for r**k   
+    def expected_rpower(self,k): #using the trapezoid method
+        
+        it=0
+        h=self.dr
+        I=(self.integrand(k,it,0.)+self.integrand(k,it,self.rmax))/2
+        for i in range(1,self.npt):
+            I+=self.integrand(k,i,i*h)
+        return I*h
+        
+        #rexpected, error = spint.quad(self.integrand, 0., self.rmax,args=(f,))
+    
+    #Obtaining the expected value of a function that depends on r
+    def expected_f(self,f_given): #using the trapezoid method
+        
+        it=0
+        h=self.dr
+        I=(self.integrand_(f_given,it,0.)+self.integrand_(f_given,it,self.rmax))/2
+        for i in range(1,self.npt):
+            I+=self.integrand_(f_given,i,i*h)
+        return I*h
+    
+        #fexpected, error = spint.quad(self.integrand, 0., self.rmax, args=(f,))
+    
 
 class R_num(R_hydrog):
     """
@@ -199,7 +248,7 @@ class R_num(R_hydrog):
         R^2.
     P : array
         r * R.
-    P2 : arra
+    P2 : array
         P^2.
         
     Methods
@@ -212,10 +261,14 @@ class R_num(R_hydrog):
         Plot P = r * R.
     Plot_P2()
         Plot P^2.
+    Expected_rpower(k)
+        Return the expected value of r**k
+    Expected_f(f)
+        Return the expected value of a given function f(r)
     """
 
     def __init__(self, file):
-        data_info = open(file)
+        data_info = open(file) 
         print("Imported data info: ")
         print()
         for i, line in enumerate(data_info):
@@ -237,7 +290,7 @@ class R_num(R_hydrog):
         self.npt = 500
         self.rmax = rmc
 
-        data_set = np.loadtxt(file, skiprows=8)
+        data_set = np.loadtxt(file, skiprows=8)  
         r = data_set[:,0]
         P = data_set[:,1]
         R = P / r
@@ -248,10 +301,7 @@ class R_num(R_hydrog):
         if L==0:
             R[0] = R[1]
         self._r = r
-        #self.P = P
         self._R = R
-        #self.R2 = R**2
-        #self.P2 = P**2
         
         #calculation of functions (linear scale)
         d_r = self.rmax/len(r)
@@ -262,12 +312,14 @@ class R_num(R_hydrog):
         self.R2 = R**2
         self.P = r * R
         self.P2 = self.P**2
+        self.dr = r[1]-r[0]
 
         #calculation of probability distribution
         self.r_dist = self.P2.cumsum() * self.rmax / (self.npt-1)
         self.r_dist /= self.r_dist[-1]
-
-    def evaluate(self, r):
+    
+    #evaluating the radial function
+    def evaluate(self, r): 
         r = np.array(r)
         lnR1 = np.log(self._R[-1])
         lnR2 = np.log(self._R[-2])
@@ -279,7 +331,20 @@ class R_num(R_hydrog):
         r_out = r>self.rmax
         R[r_out] = np.exp(lnR1 + m*(r[r_out]-r1))
         return R
+    
+  
+         
+            
+   
 
+
+
+
+    
+  
+         
+            
+   
 
 
 
