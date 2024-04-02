@@ -22,6 +22,30 @@ def cart_to_sph(x, y, z):
     return r, theta, phi
 
 class orbital_hydrog():
+    """
+    Class for the orbital function of a hydrogenic atom.
+    
+    Parameters
+    ----------
+    n : int
+        Principal quantum number.
+    l : int
+        Orbital angular momentum quantum number.
+    m : int
+        Magnetic quantum number.
+    Z : int, default 1
+        Nuclear charge in a.u.
+    mu : float, default 1.0
+        Reduced mass in a.u.
+        
+    Methods
+    -------
+    Plot_volume()
+        Plot the hydrogenic function as isosurfaces of probability distribution.
+    Plot_scatter()
+        Plot the hydrogenic function as random points following volumetric probability distribution. 
+    """
+    
     def __init__(self, n, l, m, part=None, Z=1, mu=1.):
         self.n = n
         self.l = l
@@ -119,6 +143,23 @@ class orbital_hydrog():
         
 
 class orbital(orbital_hydrog):
+    """
+    Class for the orbital function of hydrogenic atom.
+    
+    Parameters
+    ----------
+    f_rad : function 
+            Radial function of hydrogenic atom.
+    f_ang : function
+            Angular function of hydrogenic atom.
+      
+    Methods
+    -------
+    Plot_volume()
+        Plot the hydrogenic function as isosurfaces of probability distribution.
+    Plot_scatter()
+        Plot the hydrogenic function as random points following volumetric probability distribution. 
+    """
     def __init__(self, f_rad, f_ang):
         #l = f_rad.l
         #m = f_ang.m
@@ -147,6 +188,23 @@ class orbital(orbital_hydrog):
 
 
 class hybrid_orbital(orbital_hydrog):
+    """
+    Class for linear combination of orbital functions. 
+    
+    Parameters
+    ----------
+    orbitals : list
+               Orbital functions.
+    coefficients: list
+                  Coefficients for the orbital functions.
+                  
+    Methods
+    -------
+    Plot_volume()
+        Plot the hydrogenic function as isosurfaces of probability distribution.
+    Plot_scatter()
+        Plot the hydrogenic function as random points following volumetric probability distribution. 
+    """
     def __init__(self, orbitals, coefficients):
         
         if len(orbitals)!=len(coefficients):
