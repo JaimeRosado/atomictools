@@ -29,6 +29,31 @@ def fphi(m, phi, part=None):
         raise ValueError("The parameter part should be Re or Im.")
 
 class spherical_harmonic:
+    """
+    Class for the angular function calculated by orbitals.py
+    Parameters are in radians.
+    
+    Parameters
+    ----------
+    l : int
+        Orbital angular momentum quantum number.
+    m : int
+        Magnetic quantum number.
+
+    Attributes
+    ----------
+    theta : array
+            Polar angle in radians.
+    phi : array
+          Azimutal angle in radians.
+        
+    Methods
+    -------
+    Plot_prob()
+        Plot the spherical harmonic as a probability distribution per solid angle.
+    Plot_phase()
+        Plot the spherical harmonic as a complex function.
+    """
     
     def __init__(self, l, m):
         # definition of class atributes
@@ -36,10 +61,15 @@ class spherical_harmonic:
         self.m = m
         theta = np.linspace(0., np.pi, 50)
         self.theta = theta
+        dtheta = theta[1]-theta[0]
+        self.dtheta = dtheta
         sin_theta = np.sin(theta)
+        self.sin_theta = sin_theta
         sin_theta[-1] = 0. # the last theta is pi, but sin_theta is not exactly 0
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
+        dphi = phi[1] - phi[0]
+        self.dphi = dphi
         self.part = None
         
         # Computed results of ftheta() and fphi()
@@ -129,10 +159,112 @@ class spherical_harmonic:
         theta = self.get_theta(points)
         phi = self.get_phi(points)
         return theta, phi
+    
+    #Defining integrands for expected values
+    
+    def integrand_theta(self,theta_value,phi_p,theta_p,k):
+        
+        return self.module[phi_p,theta_p]**2*theta_value**k*self.sin_theta[theta_p]
+    
+    def integrand_phi(self,phi_value,phi_p,theta_p,k):
+        
+        return self.module[phi_p,theta_p]**2*phi_value**k*self.sin_theta[theta_p]
+    
+    def integrand_ftheta(self,theta_value,phi_p,theta_p,f_given):
+        
+        return self.module[phi_p,theta_p]**2*f_given(theta_value)*self.sin_theta[theta_p]
+    
+    def integrand_fphi(self,phi_value,phi_p,theta_p,f_given):
+        
+        return self.module[phi_p,theta_p]**2*f_given(phi_value)*self.sin_theta[theta_p]
+    
+    def integrand_fthetaphi(self,phi_value,theta_value,phi_p,theta_p,f_given):
+        
+        return self.module[phi_p,theta_p]**2*f_given(theta_value,phi_value)*self.sin_theta[theta_p]
+    
+    #Obtaining the expected value of theta**k
+    def expected_thetapower(self,k): #using the trapezoid method
+        
+        h_theta = self.dtheta
+        h_phi = self.dphi
+        I = (self.integrand_theta(0.,0,0,k)+self.integrand_theta(np.pi,99,49,k))/2 #se divide entre 4?
+        for i in range(1,50): #range of theta
+            for j in range(1,100): #range of phi
+                I+=self.integrand_theta(i*h_theta,j,i,k)
+        return I*h_theta*h_phi
+    
+    #Obtaining the expected value of f(theta)
+    def expected_ftheta(self,f_given): #using the trapezoid method
+        
+        h_theta = self.dtheta
+        h_phi = self.dphi
+        I = (self.integrand_ftheta(0.,0,0,f_given)+self.integrand_ftheta(np.pi,99,49,f_given))/2 #se divide entre 4?
+        for i in range(1,50): #range of theta
+            for j in range(1,100): #range of phi
+                I+=self.integrand_ftheta(i*h_theta,j,i,f_given)
+        return I*h_theta*h_phi
+    
+    #Obtaining the expected value of phi**k
+    def expected_phipower(self,k): #using the trapezoid method
+        
+        h_theta = self.dtheta
+        h_phi = self.dphi
+        I = (self.integrand_phi(0.,0,0,k)+self.integrand_phi(np.pi*2,99,49,k))/2 #se divide entre 4?
+        for i in range(1,50): #range of theta
+            for j in range(1,100): #range of phi
+                I+=self.integrand_theta(j*h_phi,j,i,k)
+        return I*h_theta*h_phi
+    
+    #Obtaining the expected value of f(phi)
+    def expected_fphi(self,f_given): #using the trapezoid method
+        
+        h_theta = self.dtheta
+        h_phi = self.dphi
+        I = (self.integrand_fphi(0.,0,0,f_given)+self.integrand_fphi(np.pi*2,99,49,f_given))/2 #se divide entre 4?
+        for i in range(1,50): #range of theta
+            for j in range(1,100): #range of phi
+                I+=self.integrand_fphi(j*h_phi,j,i,f_given)
+        return I*h_theta*h_phi
+    
+    #Obtaining the expected value of f(theta,phi)
+    def expected_f_theta_phi(self,f_given): #using the trapezoid method
+        
+        h_theta = self.dtheta
+        h_phi = self.dphi
+        I = (self.integrand_fthetaphi(0.,0.,0,0,f_given)+self.integrand_fthetaphi(np.pi*2,np.pi,99,49,f_given))/2 #se divide entre 4?
+        for i in range(1,50): #range of theta
+            for j in range(1,100): #range of phi
+                I+=self.integrand_fthetaphi(j*h_phi,i*h_theta,j,i,f_given)
+        return I*h_theta*h_phi
+
 
 
 class real_ang_function(spherical_harmonic):
+    """
+    Class for the real angular function calculated by orbitals.py
+    Parameters are in radians.
+    
+    Parameters
+    ----------
+    l : int
+        Orbital angular momentum quantum number.
+    m : int
+        Magnetic quantum number.
 
+    Attributes
+    ----------
+    theta : array
+            Polar angle in radians.
+    phi : array
+          Azimutal angle in radians.
+        
+    Methods
+    -------
+    Plot_prob()
+        Plot the spherical harmonic as a probability distribution per solid angle.
+    Plot_phase()
+        Plot the spherical harmonic as a complex function.
+    """
     def __init__(self, l, m, part="Re"):
         # definition of class atributes
         self.l = l
@@ -211,6 +343,35 @@ class real_ang_function(spherical_harmonic):
 
 
 class comb_ang_function(real_ang_function):
+    """
+    Class for linear combination of angular functions calculated by orbitals.py
+    Parameters are in radians.
+    
+    Parameters
+    ----------
+    l : int
+        Orbital angular momentum quantum number.
+    m : int
+        Magnetic quantum number.
+    functions: list
+               Parameters for the angular functions.
+    coefficients: list
+                  Coefficients for the angular functions.
+
+    Attributes
+    ----------
+    theta : array
+            Polar angle in radians.
+    phi : array
+          Azimutal angle in radians.
+        
+    Methods
+    -------
+    Plot_prob()
+        Plot the spherical harmonic as a probability distribution per solid angle.
+    Plot_phase()
+        Plot the spherical harmonic as a complex function.
+    """
     
     def __init__(self, functions, coefficients):
         if len(functions)!=len(coefficients):
