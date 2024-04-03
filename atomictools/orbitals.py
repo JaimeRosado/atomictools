@@ -33,6 +33,7 @@ class orbital_hydrog():
         Orbital angular momentum quantum number.
     m : int
         Magnetic quantum number.
+    part : 
     Z : int, default 1
         Nuclear charge in a.u.
     mu : float, default 1.0

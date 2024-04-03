@@ -220,6 +220,9 @@ class spherical_harmonic:
         
         h_theta = self.dtheta
         h_phi = self.dphi
+        # F = np.outer(np.ones("self.theta"), f_given(self.phi))
+        # integrand = self.prob * F * self.sin_theta * h_theta * h_phi
+        # integrand.sum() - ...
         I = (self.integrand_fphi(0.,0,0,f_given)+self.integrand_fphi(np.pi*2,99,49,f_given))/2 #se divide entre 4?
         for i in range(1,50): #range of theta
             for j in range(1,100): #range of phi
@@ -231,6 +234,9 @@ class spherical_harmonic:
         
         h_theta = self.dtheta
         h_phi = self.dphi
+        # f(theta, phi) bucle -> matriz F
+        # integrand = self.prob * F * self.sin_theta * h_theta * h_phi
+        # integrand.sum() - ...
         I = (self.integrand_fthetaphi(0.,0.,0,0,f_given)+self.integrand_fthetaphi(np.pi*2,np.pi,99,49,f_given))/2 #se divide entre 4?
         for i in range(1,50): #range of theta
             for j in range(1,100): #range of phi
@@ -254,9 +260,9 @@ class real_ang_function(spherical_harmonic):
     Attributes
     ----------
     theta : array
-            Polar angle in radians.
+        Polar angle in radians.
     phi : array
-          Azimutal angle in radians.
+        Azimutal angle in radians.
         
     Methods
     -------
@@ -349,14 +355,10 @@ class comb_ang_function(real_ang_function):
     
     Parameters
     ----------
-    l : int
-        Orbital angular momentum quantum number.
-    m : int
-        Magnetic quantum number.
     functions: list
-               Parameters for the angular functions.
+        Parameters for the angular functions.
     coefficients: list
-                  Coefficients for the angular functions.
+        Coefficients for the angular functions.
 
     Attributes
     ----------
