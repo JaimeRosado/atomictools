@@ -160,27 +160,14 @@ class spherical_harmonic:
         phi = self.get_phi(points)
         return theta, phi
     
-    #Defining integrands for expected values
-    
-    #def integrand_ftheta(self,theta_value,phi_p,theta_p,f_given):
-    #    
-    #    return self.module[phi_p,theta_p]**2*f_given(theta_value)*self.sin_theta[theta_p]
-    #
-    #def integrand_fphi(self,phi_value,phi_p,theta_p,f_given):
-    #    
-    #    return self.module[phi_p,theta_p]**2*f_given(phi_value)*self.sin_theta[theta_p]
-    #
-    #def integrand_fthetaphi(self,phi_value,theta_value,phi_p,theta_p,f_given):
-    #    
-    #    return self.module[phi_p,theta_p]**2*f_given(theta_value,phi_value)*self.sin_theta[theta_p]
-    
-    #Obtaining the expected value of f(theta)
-    def expected_ftheta(self,f_given): #using the trapezoid method in two dimensions
+    def expected_ftheta(self,f_given): 
         
         h_theta = self.dtheta
         h_phi = self.dphi
+        #Defining the integrand of the integral
         F = self.prob * np.outer(np.ones(self.phi.shape), f_given(self.theta))* self.sin_theta * h_theta * h_phi  
-        I = F.sum() - (F[0,:].sum() + F[:,0].sum() + F[99,:].sum() + F[:,49].sum())/2 + (F[0,0] + F[0,49] + F[99,0] + F[99,49])/4
+        #Using trapezoid method
+        I = F.sum() - (F[0,:].sum() + F[:,0].sum() + F[-1,:].sum() + F[:,-1].sum())/2 + (F[0,0] + F[0,-1] + F[-1,0] + F[-1,-1])/4
         return I
     #Obtaining the expected value of f(phi)
     def expected_fphi(self,f_given): 
@@ -189,23 +176,24 @@ class spherical_harmonic:
         h_phi = self.dphi
         #Defining the integrand of the integral
         F = self.prob * np.outer(f_given(self.phi), np.ones(self.theta.shape))* self.sin_theta * h_theta * h_phi  
-        #Using the trapezoid method
-        I = F.sum() - (F[0,:].sum() + F[:,0].sum() + F[99,:].sum() + F[:,49].sum())/2 + (F[0,0] + F[0,49] + F[99,0] + F[99,49])/4
+        #Using trapezoid method
+        I = F.sum() - (F[0,:].sum() + F[:,0].sum() + F[-1,:].sum() + F[:,-1].sum())/2 + (F[0,0] + F[0,-1] + F[-1,0] + F[-1,-1])/4
         return I
     
     #Obtaining the expected value of f(theta,phi)
-    def expected_f_theta_phi(self,f_given): #using the trapezoid method
+    def expected_f_theta_phi(self,f_given): 
         
         h_theta = self.dtheta
         h_phi = self.dphi
+        W = np.zeros([100,50])
         #Defining the matrix with the values of f(phi,theta)
-        for i in range(1,50): #range of theta
-            for j in range(1,100): #range of phi
+        for i in range(0,50): #range of theta
+            for j in range(0,100): #range of phi
                 W[j,i] = f_given(self.phi[j],self.theta[i])
         #Defining the integrand of the integral
-        F = self.prob * W* self.sin_theta * h_theta * h_phi  
-        #Using the trapezoid method
-        I = F.sum() - (F[0,:].sum() + F[:,0].sum() + F[99,:].sum() + F[:,49].sum())/2 + (F[0,0] + F[0,49] + F[99,0] + F[99,49])/4
+        F = self.prob * W * self.sin_theta * h_theta * h_phi  
+        #Using trapezoid method
+        I = F.sum() - (F[0,:].sum() + F[:,0].sum() + F[-1,:].sum() + F[:,-1].sum())/2 + (F[0,0] + F[0,-1] + F[-1,0] + F[-1,-1])/4
         return I
     
 class real_ang_function(spherical_harmonic):
