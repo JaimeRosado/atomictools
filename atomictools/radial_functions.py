@@ -5,7 +5,6 @@ import plotly.graph_objects as go
 #import plotly.io as pio
 #from plotly.subplots import make_subplots
 import scipy.special as spe
-import scipy.integrate as spint
 import numpy as np
 from scipy.interpolate import interp1d
 #pio.renderers.default='iframe'
@@ -181,51 +180,23 @@ class R_hydrog:
            xaxis_title="$$r (a.u.)$$",
            yaxis_title="$$P^2$$")
         
-        fig.show()
-    
-    #Definition of the integrand for the calculation of expected values of r**k
-    def integrand(self,k,it,r_value):
-        
-        return self.P2[it]*r_value**k
-    
-       #R = radial(r, self.n, self.l, self.Z, self.mu)
-       #P2 = (r * R)**2
-       #if f is None:
-       #    return P2*r
-       #else: 
-       #    return P2*f(r) 
-    
-    #Definition of the integrand for the calculation of expected values of a given function f(r)    
-    def integrand_(self,f_given,it,r_value):
-        
-        return self.P2[it]*f_given(r_value)      
+        fig.show()      
       
-    
     #Obtaining the expected value for r**k   
-    def expected_rpower(self,k): #using the trapezoid method
+    def expected_rpower(self,k): #using trapezoid method
 
         h=self.dr
-        # pr = h * self.P2 * self.r**k
-        # pr.sum() - (pr[0]+pr[-1])/2.
-        I=(self.integrand(k,0.,0.)+self.integrand(k,self.npt-1,self.rmax))/2
-        for i in range(1,self.npt-1):
-            I+=self.integrand(k,i,i*h)
-        return I*h
-        
-        #rexpected, error = spint.quad(self.integrand, 0., self.rmax,args=(f,))
+        F = h * self.P2 * self.r**k
+        I =  F.sum() - (F[0]+F[-1])/2.
+        return I
     
     #Obtaining the expected value of a function that depends on r
-    def expected_f(self,f_given): #using the trapezoid method
+    def expected_f(self,f_given): #using trapezoid method
         
         h=self.dr
-        # fr = h * self.P2 * f_given(self.r)
-        I=(self.integrand_(f_given,0.,0.)+self.integrand_(f_given,self.npt-1,self.rmax))/2
-        for i in range(1,self.npt-1):
-            I+=self.integrand_(f_given,i,i*h)
-        return I*h
-    
-        #fexpected, error = spint.quad(self.integrand, 0., self.rmax, args=(f,))
-    
+        F = h * self.P2 * f_given(self.r)
+        I = F.sum() - (F[0] + F[-1])/2
+        return I
 
 class R_num(R_hydrog):
     """

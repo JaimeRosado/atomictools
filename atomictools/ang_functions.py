@@ -43,9 +43,9 @@ class spherical_harmonic:
     Attributes
     ----------
     theta : array
-            Polar angle in radians.
+        Polar angle in radians.
     phi : array
-          Azimutal angle in radians.
+        Azimutal angle in radians.
         
     Methods
     -------
@@ -162,89 +162,52 @@ class spherical_harmonic:
     
     #Defining integrands for expected values
     
-    def integrand_theta(self,theta_value,phi_p,theta_p,k):
-        
-        return self.module[phi_p,theta_p]**2*theta_value**k*self.sin_theta[theta_p]
-    
-    def integrand_phi(self,phi_value,phi_p,theta_p,k):
-        
-        return self.module[phi_p,theta_p]**2*phi_value**k*self.sin_theta[theta_p]
-    
-    def integrand_ftheta(self,theta_value,phi_p,theta_p,f_given):
-        
-        return self.module[phi_p,theta_p]**2*f_given(theta_value)*self.sin_theta[theta_p]
-    
-    def integrand_fphi(self,phi_value,phi_p,theta_p,f_given):
-        
-        return self.module[phi_p,theta_p]**2*f_given(phi_value)*self.sin_theta[theta_p]
-    
-    def integrand_fthetaphi(self,phi_value,theta_value,phi_p,theta_p,f_given):
-        
-        return self.module[phi_p,theta_p]**2*f_given(theta_value,phi_value)*self.sin_theta[theta_p]
-    
-    #Obtaining the expected value of theta**k
-    def expected_thetapower(self,k): #using the trapezoid method
-        
-        h_theta = self.dtheta
-        h_phi = self.dphi
-        I = (self.integrand_theta(0.,0,0,k)+self.integrand_theta(np.pi,99,49,k))/2 #se divide entre 4?
-        for i in range(1,50): #range of theta
-            for j in range(1,100): #range of phi
-                I+=self.integrand_theta(i*h_theta,j,i,k)
-        return I*h_theta*h_phi
+    #def integrand_ftheta(self,theta_value,phi_p,theta_p,f_given):
+    #    
+    #    return self.module[phi_p,theta_p]**2*f_given(theta_value)*self.sin_theta[theta_p]
+    #
+    #def integrand_fphi(self,phi_value,phi_p,theta_p,f_given):
+    #    
+    #    return self.module[phi_p,theta_p]**2*f_given(phi_value)*self.sin_theta[theta_p]
+    #
+    #def integrand_fthetaphi(self,phi_value,theta_value,phi_p,theta_p,f_given):
+    #    
+    #    return self.module[phi_p,theta_p]**2*f_given(theta_value,phi_value)*self.sin_theta[theta_p]
     
     #Obtaining the expected value of f(theta)
-    def expected_ftheta(self,f_given): #using the trapezoid method
+    def expected_ftheta(self,f_given): #using the trapezoid method in two dimensions
         
         h_theta = self.dtheta
         h_phi = self.dphi
-        I = (self.integrand_ftheta(0.,0,0,f_given)+self.integrand_ftheta(np.pi,99,49,f_given))/2 #se divide entre 4?
-        for i in range(1,50): #range of theta
-            for j in range(1,100): #range of phi
-                I+=self.integrand_ftheta(i*h_theta,j,i,f_given)
-        return I*h_theta*h_phi
-    
-    #Obtaining the expected value of phi**k
-    def expected_phipower(self,k): #using the trapezoid method
-        
-        h_theta = self.dtheta
-        h_phi = self.dphi
-        I = (self.integrand_phi(0.,0,0,k)+self.integrand_phi(np.pi*2,99,49,k))/2 #se divide entre 4?
-        for i in range(1,50): #range of theta
-            for j in range(1,100): #range of phi
-                I+=self.integrand_theta(j*h_phi,j,i,k)
-        return I*h_theta*h_phi
-    
+        F = self.prob * np.outer(np.ones(self.phi.shape), f_given(self.theta))* self.sin_theta * h_theta * h_phi  
+        I = F.sum() - (F[0,:].sum() + F[:,0].sum() + F[99,:].sum() + F[:,49].sum())/2 + (F[0,0] + F[0,49] + F[99,0] + F[99,49])/4
+        return I
     #Obtaining the expected value of f(phi)
-    def expected_fphi(self,f_given): #using the trapezoid method
+    def expected_fphi(self,f_given): 
         
         h_theta = self.dtheta
         h_phi = self.dphi
-        # F = np.outer(np.ones("self.theta"), f_given(self.phi))
-        # integrand = self.prob * F * self.sin_theta * h_theta * h_phi
-        # integrand.sum() - ...
-        I = (self.integrand_fphi(0.,0,0,f_given)+self.integrand_fphi(np.pi*2,99,49,f_given))/2 #se divide entre 4?
-        for i in range(1,50): #range of theta
-            for j in range(1,100): #range of phi
-                I+=self.integrand_fphi(j*h_phi,j,i,f_given)
-        return I*h_theta*h_phi
+        #Defining the integrand of the integral
+        F = self.prob * np.outer(f_given(self.phi), np.ones(self.theta.shape))* self.sin_theta * h_theta * h_phi  
+        #Using the trapezoid method
+        I = F.sum() - (F[0,:].sum() + F[:,0].sum() + F[99,:].sum() + F[:,49].sum())/2 + (F[0,0] + F[0,49] + F[99,0] + F[99,49])/4
+        return I
     
     #Obtaining the expected value of f(theta,phi)
     def expected_f_theta_phi(self,f_given): #using the trapezoid method
         
         h_theta = self.dtheta
         h_phi = self.dphi
-        # f(theta, phi) bucle -> matriz F
-        # integrand = self.prob * F * self.sin_theta * h_theta * h_phi
-        # integrand.sum() - ...
-        I = (self.integrand_fthetaphi(0.,0.,0,0,f_given)+self.integrand_fthetaphi(np.pi*2,np.pi,99,49,f_given))/2 #se divide entre 4?
+        #Defining the matrix with the values of f(phi,theta)
         for i in range(1,50): #range of theta
             for j in range(1,100): #range of phi
-                I+=self.integrand_fthetaphi(j*h_phi,i*h_theta,j,i,f_given)
-        return I*h_theta*h_phi
-
-
-
+                W[j,i] = f_given(self.phi[j],self.theta[i])
+        #Defining the integrand of the integral
+        F = self.prob * W* self.sin_theta * h_theta * h_phi  
+        #Using the trapezoid method
+        I = F.sum() - (F[0,:].sum() + F[:,0].sum() + F[99,:].sum() + F[:,49].sum())/2 + (F[0,0] + F[0,49] + F[99,0] + F[99,49])/4
+        return I
+    
 class real_ang_function(spherical_harmonic):
     """
     Class for the real angular function calculated by orbitals.py
@@ -363,9 +326,9 @@ class comb_ang_function(real_ang_function):
     Attributes
     ----------
     theta : array
-            Polar angle in radians.
+        Polar angle in radians.
     phi : array
-          Azimutal angle in radians.
+        Azimutal angle in radians.
         
     Methods
     -------
