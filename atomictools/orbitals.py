@@ -141,8 +141,37 @@ class orbital_hydrog():
         )
         fig.show()
         
-        
+    def expected_frad(self, f_given):
+        return self.R.expected_f(f_given)
 
+    def expected_fang(self,f_given):
+        return self.Y.expected_fang(f_given)
+    
+    def intg(self,f,r,theta,phi):
+        orb = self.evaluate(r,theta,phi) 
+        return orb**2*f(r,theta,phi)*r**2*np.sin(theta)
+    
+    def expected_fcombined(self,f):
+        
+        h1 = self.R.dr
+        h2 = self.Y.dtheta
+        h3 = self.Y.dphi
+        # r,theta and phi in spherical coordinates
+        r = self.R.r
+        theta = self.Y.theta
+        phi = self.Y.phi
+        
+        # obtaining integrating points
+        r0, t0, p0 = np.meshgrid(r[:-1], theta[:-1], phi[:-1], indexing='ij')
+        ri, tj, pk = np.meshgrid(r[1:], theta[1:], phi[1:], indexing='ij')
+        
+        integral_points = (self.intg(f, r0, t0, p0) + self.intg(f, ri, t0, p0) +
+                           self.intg(f, r0, tj, p0) + self.intg(f, ri, tj, p0) +
+                           self.intg(f, r0, t0, pk) + self.intg(f, ri, t0, pk) +
+                           self.intg(f, r0, tj, pk) + self.intg(f, ri, tj, pk))
+        
+        I = integral_points.sum() * h1 * h2 * h3 / 8
+        return I
 class orbital(orbital_hydrog):
     """
     Class for the orbital function of hydrogenic atom.

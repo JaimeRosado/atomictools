@@ -181,7 +181,7 @@ class spherical_harmonic:
         return I
     
     #Obtaining the expected value of f(theta,phi)
-    def expected_f_theta_phi(self,f_given): 
+    def expected_fang(self,f_given): 
         
         h_theta = self.dtheta
         h_phi = self.dphi
@@ -231,8 +231,12 @@ class real_ang_function(spherical_harmonic):
         self.theta = theta
         sin_theta = np.sin(theta)
         sin_theta[-1] = 0. # the last theta is pi, but sin_theta is not exactly 0
+        dtheta = theta[1] - theta[0]
+        self.dtheta = dtheta
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
+        dphi = phi[1] - phi[0]
+        self.dphi = dphi
         
         if m==0 and part!="Re":
             print("For m=0, there is only real part.")
