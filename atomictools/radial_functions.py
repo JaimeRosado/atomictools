@@ -59,10 +59,10 @@ class R_hydrog:
         Plot P = r * R.
     Plot_P2()
         Plot P^2.
-    Expected_rpower(k)
-        Return the expected value of r**k
+    Expected_rk(k)
+        Return the expected value of r**k.
     Expected_f(f)
-        Return the expected value of a given function f(r)
+        Return the expected value of a given function f(r).
     """
     def __init__(self, n, l, Z=1, mu=1.):
         self.n = n         
@@ -183,20 +183,14 @@ class R_hydrog:
         fig.show()      
       
     #Obtaining the expected value for r**k   
-    def expected_rpower(self,k): #using trapezoid method
-
-        h=self.dr
-        F = h * self.P2 * self.r**k
-        I =  F.sum() - (F[0]+F[-1])/2.
-        return I
+    def expected_rk(self, k): #using trapezoid method
+        F = self.dr * self.P2 * self.r**k
+        return  F.sum() - (F[0] + F[-1]) / 2.
     
     #Obtaining the expected value of a function that depends on r
-    def expected_f(self,f_given): #using trapezoid method
-        
-        h=self.dr
-        F = h * self.P2 * f_given(self.r)
-        I = F.sum() - (F[0] + F[-1])/2
-        return I
+    def expected_f(self, f): #using trapezoid method
+        F = self.dr * self.P2 * f(self.r)
+        return F.sum() - (F[0] + F[-1]) / 2.
 
 class R_num(R_hydrog):
     """
@@ -233,10 +227,10 @@ class R_num(R_hydrog):
         Plot P = r * R.
     Plot_P2()
         Plot P^2.
-    Expected_rpower(k)
-        Return the expected value of r**k
+    Expected_rk(k)
+        Return the expected value of r**k.
     Expected_f(f)
-        Return the expected value of a given function f(r)
+        Return the expected value of a given function f(r).
     """
 
     def __init__(self, file):

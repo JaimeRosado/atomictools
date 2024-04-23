@@ -61,15 +61,16 @@ class spherical_harmonic:
         self.m = m
         theta = np.linspace(0., np.pi, 50)
         self.theta = theta
-        dtheta = theta[1]-theta[0]
+        dtheta = theta[1] - theta[0]
         self.dtheta = dtheta
         sin_theta = np.sin(theta)
-        self.sin_theta = sin_theta
         sin_theta[-1] = 0. # the last theta is pi, but sin_theta is not exactly 0
+        self.sin_theta = sin_theta
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
         dphi = phi[1] - phi[0]
         self.dphi = dphi
+        self.domega = sin_theta * dtheta * dphi
         self.part = None
         
         # Computed results of ftheta() and fphi()
@@ -160,41 +161,25 @@ class spherical_harmonic:
         phi = self.get_phi(points)
         return theta, phi
     
-    def expected_ftheta(self,f_given): 
-        
-        h_theta = self.dtheta
-        h_phi = self.dphi
+    def expected_ftheta(self, f): 
         #Defining the integrand of the integral
-        F = self.prob * np.outer(np.ones(self.phi.shape), f_given(self.theta))* self.sin_theta * h_theta * h_phi  
+        F = self.prob * f(self.theta) * self.domega
         #Using trapezoid method
-        I = F.sum() - (F[0,:].sum() + F[:,0].sum() + F[-1,:].sum() + F[:,-1].sum())/2 + (F[0,0] + F[0,-1] + F[-1,0] + F[-1,-1])/4
-        return I
-    #Obtaining the expected value of f(phi)
-    def expected_fphi(self,f_given): 
-        
-        h_theta = self.dtheta
-        h_phi = self.dphi
-        #Defining the integrand of the integral
-        F = self.prob * np.outer(f_given(self.phi), np.ones(self.theta.shape))* self.sin_theta * h_theta * h_phi  
-        #Using trapezoid method
-        I = F.sum() - (F[0,:].sum() + F[:,0].sum() + F[-1,:].sum() + F[:,-1].sum())/2 + (F[0,0] + F[0,-1] + F[-1,0] + F[-1,-1])/4
-        return I
+        return F.sum() - F[0,:].sum() # point 0: phi = 0, point 99: phi = 2pi
     
-    #Obtaining the expected value of f(theta,phi)
-    def expected_fang(self,f_given): 
-        
-        h_theta = self.dtheta
-        h_phi = self.dphi
-        W = np.zeros([100,50])
-        #Defining the matrix with the values of f(phi,theta)
-        for i in range(0,50): #range of theta
-            for j in range(0,100): #range of phi
-                W[j,i] = f_given(self.phi[j],self.theta[i])
+    #Obtaining the expected value of f(phi)
+    def expected_fphi(self,f):
         #Defining the integrand of the integral
-        F = self.prob * W * self.sin_theta * h_theta * h_phi  
+        F = self.prob * f(self.phi[:,np.newaxis]) * self.domega
         #Using trapezoid method
-        I = F.sum() - (F[0,:].sum() + F[:,0].sum() + F[-1,:].sum() + F[:,-1].sum())/2 + (F[0,0] + F[0,-1] + F[-1,0] + F[-1,-1])/4
-        return I
+        return F.sum() - F[0,:].sum() # point 0: phi = 0, point 99: phi = 2pi
+
+    #Obtaining the expected value of f(theta,phi)
+    def expected_fthetaphi(self, f):
+        #Defining the integrand of the integral
+        F = self.prob * f(self.theta, self.phi[:,np.newaxis]) * self.domega
+        #Using trapezoid method
+        return F.sum() - F[0,:].sum() # point 0: phi = 0, point 99: phi = 2pi
     
 class real_ang_function(spherical_harmonic):
     """
@@ -229,14 +214,16 @@ class real_ang_function(spherical_harmonic):
         self.m = m
         theta = np.linspace(0., np.pi, 50)
         self.theta = theta
-        sin_theta = np.sin(theta)
-        sin_theta[-1] = 0. # the last theta is pi, but sin_theta is not exactly 0
         dtheta = theta[1] - theta[0]
         self.dtheta = dtheta
+        sin_theta = np.sin(theta)
+        sin_theta[-1] = 0. # the last theta is pi, but sin_theta is not exactly 0
+        self.sin_theta = sin_theta
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
         dphi = phi[1] - phi[0]
         self.dphi = dphi
+        self.domega = sin_theta * dtheta * dphi
         
         if m==0 and part!="Re":
             print("For m=0, there is only real part.")
@@ -344,10 +331,17 @@ class comb_ang_function(real_ang_function):
         self.m = None
         theta = np.linspace(0., np.pi, 50)
         self.theta = theta
+        dtheta = theta[1] - theta[0]
+        self.dtheta = dtheta
         sin_theta = np.sin(theta)
         sin_theta[-1] = 0. # the last theta is pi, but sin_theta is not exactly 0
+        self.sin_theta = sin_theta
         phi = np.linspace(0., 2.*np.pi, 100)
         self.phi = phi
+        dphi = phi[1] - phi[0]
+        self.dphi = dphi
+        self.domega = sin_theta * dtheta * dphi
+
         Y = np.zeros((100, 50), dtype='complex128')
         check = []
         # Combination of spherical harmonics, i.e., list of (l, m)

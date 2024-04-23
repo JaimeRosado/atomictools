@@ -141,18 +141,17 @@ class orbital_hydrog():
         )
         fig.show()
         
-    def expected_frad(self, f_given):
-        return self.R.expected_f(f_given)
+    def expected_fr(self, f):
+        return self.R.expected_f(f)
 
-    def expected_fang(self,f_given):
-        return self.Y.expected_fang(f_given)
+    def expected_fthetaphi(self, f):
+        return self.Y.expected_fthetaphi(f)
     
-    def intg(self,f,r,theta,phi):
-        orb = self.evaluate(r,theta,phi) 
-        return orb**2*f(r,theta,phi)*r**2*np.sin(theta)
+    def intg(self, f, r, theta, phi):
+        orb = self.evaluate(r, theta, phi) 
+        return orb**2 * f(r, theta, phi) * r**2 * np.sin(theta)
     
-    def expected_fcombined(self,f):
-        
+    def expected_frthetaphi(self, f):
         h1 = self.R.dr
         h2 = self.Y.dtheta
         h3 = self.Y.dphi
@@ -172,6 +171,7 @@ class orbital_hydrog():
         
         I = integral_points.sum() * h1 * h2 * h3 / 8
         return I
+
 class orbital(orbital_hydrog):
     """
     Class for the orbital function of hydrogenic atom.
