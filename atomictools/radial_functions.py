@@ -185,12 +185,12 @@ class R_hydrog:
     #Obtaining the expected value for r**k   
     def expected_rk(self, k): #using trapezoid method
         F = self.dr * self.P2 * self.r**k
-        return  F.sum() - (F[0] + F[-1]) / 2.
+        return  F.sum() # - (F[0] + F[-1]) / 2. (not needed)
     
     #Obtaining the expected value of a function that depends on r
     def expected_f(self, f): #using trapezoid method
         F = self.dr * self.P2 * f(self.r)
-        return F.sum() - (F[0] + F[-1]) / 2.
+        return F.sum() # - (F[0] + F[-1]) / 2. (not needed)
 
 class R_num(R_hydrog):
     """
