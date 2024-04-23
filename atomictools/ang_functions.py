@@ -161,21 +161,21 @@ class spherical_harmonic:
         phi = self.get_phi(points)
         return theta, phi
     
-    def expected_ftheta(self, f): 
+    def expected_f_theta(self, f): 
         #Defining the integrand of the integral
         F = self.prob * f(self.theta) * self.domega
         #Using trapezoid method
         return F.sum() - F[0,:].sum() # point 0: phi = 0, point 99: phi = 2pi
     
     #Obtaining the expected value of f(phi)
-    def expected_fphi(self,f):
+    def expected_f_phi(self,f):
         #Defining the integrand of the integral
         F = self.prob * f(self.phi[:,np.newaxis]) * self.domega
         #Using trapezoid method
         return F.sum() - F[0,:].sum() # point 0: phi = 0, point 99: phi = 2pi
 
     #Obtaining the expected value of f(theta,phi)
-    def expected_fthetaphi(self, f):
+    def expected_f_theta_phi(self, f):
         #Defining the integrand of the integral
         F = self.prob * f(self.theta, self.phi[:,np.newaxis]) * self.domega
         #Using trapezoid method

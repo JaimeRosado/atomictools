@@ -141,17 +141,17 @@ class orbital_hydrog():
         )
         fig.show()
         
-    def expected_fr(self, f):
+    def expected_f_r(self, f):
         return self.R.expected_f(f)
 
-    def expected_fthetaphi(self, f):
-        return self.Y.expected_fthetaphi(f)
+    def expected_f_theta_phi(self, f):
+        return self.Y.expected_f_theta_phi(f)
     
     def intg(self, f, r, theta, phi):
         orb = self.evaluate(r, theta, phi) 
         return orb**2 * f(r, theta, phi) * r**2 * np.sin(theta)
     
-    def expected_frthetaphi(self, f):
+    def expected_f_r_theta_phi(self, f):
         h1 = self.R.dr
         h2 = self.Y.dtheta
         h3 = self.Y.dphi
