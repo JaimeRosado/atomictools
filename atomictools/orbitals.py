@@ -78,12 +78,13 @@ class orbital_hydrog():
         self.zmin = -rmax
         self.zmax = rmax
         self.axis = np.mgrid[-rmax:rmax:40j]
-        #self.r = self.R.r
-        #self.theta = self.Y.theta
-        #self.phi = self.Y.phi
-        
+                
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
+        self.r = r
+        self.theta = theta
+        self.phi = phi
+        self.d3 = (2.*rmax/40.)**3
         
         self.orbital = self.evaluate(r, theta, phi)
         self.prob = np.abs(self.orbital)**2
@@ -92,6 +93,9 @@ class orbital_hydrog():
         R = self.R.evaluate(r)
         Y = self.Y.evaluate(theta, phi)
         return R * Y
+    
+    def calculate(self,r,theta,phi):
+        R = at.R_hydrog(n, l, Z, mu)
         
     def plot_volume(self):
         min_val = np.min(self.prob)
@@ -146,35 +150,16 @@ class orbital_hydrog():
 
     def expected_f_theta_phi(self, f):
         return self.Y.expected_f_theta_phi(f)
-    
-    def intg(self, f, r, theta, phi):
-        orb = self.evaluate(r, theta, phi) 
-        return orb**2 * f(r, theta, phi) * r**2 * np.sin(theta)
-    
+  
     def expected_f_r_theta_phi(self, f):
-        h1 = self.R.dr
-        h2 = self.Y.dtheta
-        h3 = self.Y.dphi
-        # r,theta and phi in spherical coordinates
-        r = self.R.r
-        theta = self.Y.theta
-        phi = self.Y.phi
-        
-        # obtaining integrating points
-        r0, t0, p0 = np.meshgrid(r[:-1], theta[:-1], phi[:-1], indexing='ij')
-        ri, tj, pk = np.meshgrid(r[1:], theta[1:], phi[1:], indexing='ij')
-        
-        integral_points = (self.intg(f, r0, t0, p0) + self.intg(f, ri, t0, p0) +
-                           self.intg(f, r0, tj, p0) + self.intg(f, ri, tj, p0) +
-                           self.intg(f, r0, t0, pk) + self.intg(f, ri, t0, pk) +
-                           self.intg(f, r0, tj, pk) + self.intg(f, ri, tj, pk))
-        
-        I = integral_points.sum() * h1 * h2 * h3 / 8
-        return I
-
+        h = self.d3
+        F = self.prob * f(self.r, self.theta, self.phi) * self.r**2 * np.sin(self.theta) 
+        return F.sum() * h
+    
 class orbital(orbital_hydrog):
     """
     Class for the orbital function of hydrogenic atom.
+    Radial and angular parts are factorized.
     
     Parameters
     ----------
@@ -211,6 +196,10 @@ class orbital(orbital_hydrog):
             
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
+        self.r = r
+        self.theta = theta
+        self.phi = phi
+        self.d3 = (2.*rmax/40.)**3
         
         self.orbital = self.evaluate(r, theta, phi)
         self.prob = np.abs(self.orbital)**2
@@ -224,9 +213,9 @@ class hybrid_orbital(orbital_hydrog):
     Parameters
     ----------
     orbitals : list
-               Orbital functions.
+        Orbital functions.
     coefficients: list
-                  Coefficients for the orbital functions.
+        Coefficients for the orbital functions.
                   
     Methods
     -------
@@ -259,6 +248,10 @@ class hybrid_orbital(orbital_hydrog):
         self.delta_z = delta
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
+        self.r = r
+        self.theta = theta
+        self.phi = phi
+        self.d3 = (2.*rmax/40.)**3
         
         orbital = np.zeros([40,40,40], dtype = 'complex128')
         
@@ -369,6 +362,11 @@ class molecular_orbital(hybrid_orbital):
         
         x, y, z = np.mgrid[xmin:xmax:40j, ymin:ymax:40j, zmin:zmax:40j]
         self.x, self.y, self.z = x, y, z
+        r, theta, phi = cart_to_sph(self.x, self.y, self.z)
+        self.r = r
+        self.theta = theta
+        self.phi = phi
+        self.d3 = self.delta_x * self.delta_y * self.delta_z
         
         orbital = np.zeros([40,40,40], dtype = 'complex128')
                 
