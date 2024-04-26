@@ -321,7 +321,16 @@ class hybrid_orbital(orbital_hydrog):
             x[point] = x_point
 
         return x, y, z
-    
+
+    def expected_f_r(self, f):
+        def g(r, theta, phi):
+            return f(r)
+        return self.expected_f_r_theta_phi(g)
+
+    def expected_f_theta_phi(self, f):
+        def g(r, theta, phi):
+            return f(theta, phi)
+        return self.expected_f_r_theta_phi(g)
     
 class molecular_orbital(hybrid_orbital):
     def __init__(self, orbitals, coefficients, centers):
