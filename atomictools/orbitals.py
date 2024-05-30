@@ -84,7 +84,7 @@ class orbital_hydrog():
         self.r = r
         self.theta = theta
         self.phi = phi
-        self.d3 = (2.*rmax/40.)**3
+        self.d3 = (2.*rmax/39.)**3
         
         self.orbital = self.evaluate(r, theta, phi)
         self.prob = np.abs(self.orbital)**2
@@ -153,7 +153,7 @@ class orbital_hydrog():
   
     def expected_f_r_theta_phi(self, f):
         h = self.d3
-        F = self.prob * f(self.r, self.theta, self.phi) * self.r**2 * np.sin(self.theta) 
+        F = self.prob * f(self.r, self.theta, self.phi)  #self.r**2 * np.sin(self.theta) 
         return F.sum() * h
     
 class orbital(orbital_hydrog):
