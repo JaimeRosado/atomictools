@@ -153,7 +153,12 @@ class orbital_hydrog():
   
     def expected_f_r_theta_phi(self, f):
         h = self.d3
-        F = self.prob * f(self.r, self.theta, self.phi)  #self.r**2 * np.sin(self.theta) 
+        F = self.prob * f(self.r, self.theta, self.phi)
+        return F.sum() * h
+    
+    def expected_f_x_y_z(self, f):
+        h = self.d3
+        F = self.prob * f(self.x, self.y, self.z)
         return F.sum() * h
     
 class orbital(orbital_hydrog):

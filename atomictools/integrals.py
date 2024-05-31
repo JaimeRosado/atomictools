@@ -13,6 +13,8 @@ def cart_to_sph(x, y, z):
     phi = np.arctan2(y, x)
     return r, theta, phi
 
+#JR: Crear que funcion para que el usuario no tenga que crear un objeto integral
+
 class integral():
     
     def __init__(self, orbital1, orbital2=None):
@@ -22,7 +24,7 @@ class integral():
             self.orb2 = orbital1
             rmax = self.orb1.rmax
             self.rmax = rmax
-        else:     
+        else:     # Para orbitales moleculares, obtener xmin, xmax, ...
             self.orb1 = orbital1
             self.orb2 = orbital2
             rmax1 = self.orb1.rmax
@@ -32,7 +34,9 @@ class integral():
                 self.rmax = rmax1
             else:
                 self.rmax = rmax2
-            
+        
+        #Para el caso orbital2=orbital1, no hace falta redefinir nada de esto
+        #Usa lo que ya está definido en orbital1 (p.ej. self.r = orbital1.r)
         self.x, self.y, self.z = np.mgrid[-rmax:rmax:40j, -rmax:rmax:40j, -rmax:rmax:40j]
         r, theta, phi = cart_to_sph(self.x, self.y, self.z)
         self.r = r
@@ -40,12 +44,13 @@ class integral():
         self.phi = phi
         d3 = (2.*rmax/39.)**3 
         self.d3 = d3
-            
+    
+    #Calcular las derivadas en esféricas en términos de las derivadas de x, y, z
     def derivative_r(self, matrix, kr):
         dr = self.r[1:,1:,1:]-self.r[:-1,:-1,:-1]
         deriv_amp = np.zeros([40,40,40])    
         for n in range(kr):
-            dmatrix = matrix[1:,:-1,:-1]-matrix[:-1,:-1,:-1]
+            dmatrix = matrix[1:,1:,1:]-matrix[:-1,:-1,:-1]
             #for theta in range(39.):
             #    for phi in range(39.):
             #        for r in range(39.): 
@@ -75,14 +80,15 @@ class integral():
             matrix = deriv_amp    
         return deriv_amp
     
+    #Usar diff de numpy con las opciones prepend/append
     def derivative_x(self, matrix, kx):
-        dx = self.x[1:,1:,1:]-self.x[:-1,:-1,:-1]
+        dx = self.x[1:,:,:]-self.x[:-1,:,:]
         deriv_amp = np.zeros([40,40,40])    
         for n in range(kx):
-            dmatrix = matrix[:-1,1:,:-1]-matrix[:-1,:-1,:-1]
+            dmatrix = matrix[1:,:,:]-matrix[:-1,:,:]
             deriv = dmatrix/dx #shape[39,39,39]
-            deriv_amp[:-1,:-1,:-1] = deriv #shape[40,40,40]
-            matrix = deriv_amp    
+            deriv_amp[:-1,:,:] = deriv #shape[40,40,40]
+            matrix = deriv_amp
         return deriv_amp
     
     def derivative_y(self, matrix, ky):
@@ -113,8 +119,8 @@ class integral():
         ket = orb2
         
         if kr==None and ktheta==None and kphi==None:
-            if f!=None:
-                F = np.abs(bra*ket)*f(self.r,self.theta,self.phi) #*self.r**2*np.sin(self.theta) (estamos integrando con cartesianas no?)
+            if f is not None:
+                F = bra*ket*f(self.r,self.theta,self.phi) #Quedarse con parte Re si la parte imaginaria es nula
                 return F.sum() * self.d3 
             else: 
                 raise ValueError("A variable is necessary")
@@ -143,11 +149,16 @@ class integral():
                 F = np.abs(bra*deriv_ket) #*self.r**2*np.sin(self.theta)
                 return F.sum()*self.d3
                     
+    #Generalizar para cualquier operador, redifiniendo ket en cada paso con condiciones en f, kx...
     def integral_cart(self, f=None, kx=None, ky=None, kz=None): 
         
-        orb1 = at.hybrid_orbital(orbitals=[self.orb1], coefficients=[1.]).evaluate(self.x,self.y,self.z)
-        bra = np.conjugate(orb1) 
-        orb2 = at.hybrid_orbital(orbitals=[self.orb2], coefficients=[1.]).evaluate(self.x,self.y,self.z)
+        #orb1 = at.hybrid_orbital(orbitals=[self.orb1], coefficients=[1.]).evaluate(self.x,self.y,self.z)
+        #bra = np.conjugate(orb1) 
+        #orb2 = at.hybrid_orbital(orbitals=[self.orb2], coefficients=[1.]).evaluate(self.x,self.y,self.z)
+        #ket = orb2
+        orb1 = self.orb1.evaluate(self.r, self.theta, self.phi)
+        bra = np.conjugate(orb1) #debería hacer la traspuesta?
+        orb2 = self.orb2.evaluate(self.r, self.theta, self.phi)
         ket = orb2
         
         h = self.d3
