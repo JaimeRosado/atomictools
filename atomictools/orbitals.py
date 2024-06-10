@@ -88,6 +88,7 @@ class orbital_hydrog():
         
         self.orbital = self.evaluate(r, theta, phi)
         self.prob = np.abs(self.orbital)**2
+        self.int = at.integral_aux(self.x, self.y, self.z, self.r, self.theta, self.phi, self.orbital, self.d3)
 
     def evaluate(self, r, theta, phi):
         R = self.R.evaluate(r)
@@ -150,16 +151,12 @@ class orbital_hydrog():
 
     def expected_f_theta_phi(self, f):
         return self.Y.expected_f_theta_phi(f)
-  
-    def expected_f_r_theta_phi(self, f):
-        h = self.d3
-        F = self.prob * f(self.r, self.theta, self.phi)
-        return F.sum() * h
+      
+    def expected_f_x_y_z(self, f=None, kx=None, ky=None, kz=None):
+        return self.int.integral_cart(f, kx, ky, kz)
     
-    def expected_f_x_y_z(self, f):
-        h = self.d3
-        F = self.prob * f(self.x, self.y, self.z)
-        return F.sum() * h
+    def expected_f_r_theta_phi(self, f=None, kr=None, ktheta=None, kphi=None):
+        return self.int.integral_sph(f, kr, ktheta, kphi)
     
 class orbital(orbital_hydrog):
     """
