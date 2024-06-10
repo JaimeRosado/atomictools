@@ -132,56 +132,6 @@ L = 0
 r, V = _calc_pot(model, Z, N, A, a1, a2, H, D, npt, rmc)
 P = _calc(r, V, Z, E, L)
 
-# Prepara la figura del potencial
-fig_V, ax_V = plt. subplots(figsize=(9, 4))
-ax_V.grid(True)
-ax_V.set_xlabel('r')
-ax_V.set_ylabel('V(r)')
-ax_V.axhline(0, color='green', linewidth=0.8)  # Línea horizontal en y=0
-ax_V.axvline(0, color='green', linewidth=0.8)  # Línea vertical en x=0
-# Traza modificable de la figura
-line_V, = ax_V.plot(r[1:], V[1:])
-
-# Actualiza fig_V
-def calculate_potential(model=model, Z=Z, N=N, A=A, a1=a1, a2=a2, H=H, D=D, npt=npt, rmc=rmc):
-    r, V = _calc_pot(model, Z, N, A, a1, a2, H, D, npt, rmc)
-    rmin = r[r<0.8].max()
-    Vmin = V[r==rmin][0]
-
-    line_V.set_xdata(r[1:])
-    line_V.set_ydata(V[1:])
-    ax_V.set_xlim([-0.01*rmc, 1.01*rmc])
-    ax_V.set_ylim([Vmin, -0.01*Vmin])   
-    ax_V.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
-    ax_V.autoscale_view()  # Ajustar la escala de los ejes si es necesario
-    fig_V.canvas.draw()  # Redibujar la figura
-
-    return r, V
-
-# Prepara la figura del orbital
-fig_P, ax_P = plt. subplots(figsize=(9, 4))
-ax_P.grid(True)
-ax_P.set_xlabel('r')
-ax_P.set_ylabel('P(r)')
-ax_P.axhline(0, color='green', linewidth=0.8)  # Línea horizontal en y=0
-ax_P.axvline(0, color='green', linewidth=0.8)  # Línea vertical en x=0
-# Traza modificable de la figura
-line_P, = ax_P.plot(r[1:], V[1:])
-
-# Actualiza fig_P
-def calculate_P(model=model, Z=Z, N=N, A=A, a1=a1, a2=a2, H=H, D=D, npt=npt, rmc=rmc, E=E, L=L):
-    r, V = _calc_pot(model, Z, N, A, a1, a2, H, D, npt, rmc) # No se usa calculate_potential
-    P = _calc(r, V, Z, E, L)
-    line_P.set_xdata(r[1:])
-    line_P.set_ydata(P[1:])
-    ax_P.set_xlim([-0.01*rmc, 1.01*rmc])
-    fig_P.suptitle('Maximum of P at ' + f'{P.max():2.3}')
-    ax_P.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
-    ax_P.autoscale_view()  # Ajustar la escala de los ejes si es necesario
-    fig_P.canvas.draw()  # Redibujar la figura
-
-
-    return model, Z, N, A, a1, a2, H, D, npt, rmc, E, L, r, P
 
 #### Widgets de las figuras interactivas ####
 #############################################
@@ -348,6 +298,55 @@ def update_widgets(model, Z, N, A, a1, a2, H, D, npt, rmc, E, L):
 #### Función para crear figura interactiva ####
 ###############################################
 def calculate():
+    # Prepara la figura del potencial
+    #fig_V, ax_V = plt. subplots(figsize=(9, 4))
+    #ax_V.grid(True)
+    #ax_V.set_xlabel('r')
+    #ax_V.set_ylabel('V(r)')
+    #ax_V.axhline(0, color='green', linewidth=0.8)  # Línea horizontal en y=0
+    #ax_V.axvline(0, color='green', linewidth=0.8)  # Línea vertical en x=0
+    ## Traza modificable de la figura
+    #line_V, = ax_V.plot(r[1:], V[1:])
+
+    # Actualiza fig_V
+    #def calculate_potential(model=model, Z=Z, N=N, A=A, a1=a1, a2=a2, H=H, D=D, npt=npt, rmc=rmc):
+    #    r, V = _calc_pot(model, Z, N, A, a1, a2, H, D, npt, rmc)
+    #    rmin = r[r<0.8].max()
+    #    Vmin = V[r==rmin][0]
+    #
+    #    line_V.set_xdata(r[1:])
+    #    line_V.set_ydata(V[1:])
+    #    ax_V.set_xlim([-0.01*rmc, 1.01*rmc])
+    #    ax_V.set_ylim([Vmin, -0.01*Vmin])   
+    #    ax_V.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
+    #    ax_V.autoscale_view()  # Ajustar la escala de los ejes si es necesario
+    #    fig_V.canvas.draw()  # Redibujar la figura
+    #
+    #    return r, V
+    
+    # Prepara la figura del orbital
+    fig_P, ax_P = plt. subplots(figsize=(9, 4))
+    ax_P.grid(True)
+    ax_P.set_xlabel('r')
+    ax_P.set_ylabel('P(r)')
+    ax_P.axhline(0, color='green', linewidth=0.8)  # Línea horizontal en y=0
+    ax_P.axvline(0, color='green', linewidth=0.8)  # Línea vertical en x=0
+    # Traza modificable de la figura
+    line_P, = ax_P.plot(r[1:], V[1:])
+    
+    def calculate_P(model=model, Z=Z, N=N, A=A, a1=a1, a2=a2, H=H, D=D, npt=npt, rmc=rmc, E=E, L=L):
+        r, V = _calc_pot(model, Z, N, A, a1, a2, H, D, npt, rmc) # No se usa calculate_potential
+        P = _calc(r, V, Z, E, L)
+        line_P.set_xdata(r[1:])
+        line_P.set_ydata(P[1:])
+        ax_P.set_xlim([-0.01*rmc, 1.01*rmc])
+        fig_P.suptitle('Maximum of P at ' + f'{P.max():2.3}')
+        ax_P.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
+        ax_P.autoscale_view()  # Ajustar la escala de los ejes si es necesario
+        fig_P.canvas.draw()  # Redibujar la figura
+
+        return model, Z, N, A, a1, a2, H, D, npt, rmc, E, L, r, P
+
     # Genera gráfico interactivo del orbital
     # Nótese que calculate_P incluye _calc_pot
     output = interactive(calculate_P, model=model_dropdown, Z=Z_text, N=N_text,
