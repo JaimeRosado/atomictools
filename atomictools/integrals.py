@@ -100,7 +100,7 @@ class integral():
             ket = self.orb2.evaluate(self.r, self.theta, self.phi)
         return ket
             
-    def integral_sph(self,f=None, kr=None, ktheta=None, kphi=None):       
+    def integral_sph(self, f=None, kr=None, ktheta=None, kphi=None):       
         bra = self.bra()
         ket = self.ket()
         h = self.d3
@@ -166,102 +166,11 @@ class integral():
             return I.real
         else: 
             return I
-        
-class integral_aux(integral):
-    
-    def __init__(self, x, y, z, r, theta, phi, orbital1, d3, orbital2=None): #these orbitals must be matrix
-        if orbital2==None:
-            self.orb1 = orbital1
-            self.orb2 = orbital1
-        else:     
-            self.orb1 = orbital1
-            self.orb2 = orbital2
-        
-        h = d3
-        self.h = h
-        self.x = x
-        self.y = y
-        self.z = z
-        self.r = r
-        self.theta = theta
-        self.phi = phi
-                                                 
-    def integral_cart(self, f=None, kx=None, ky=None, kz=None): 
-        bra = np.conjugate(self.orb1) 
-        ket = self.orb2
-        
-        if kx is not None:
-                if isinstance(kx, int) and kx >= 1:
-                    deriv_ket = self.derivative_x(ket, kx)         
-                else:
-                    raise ValueError("kx must be a positive integer")
-                ket = deriv_ket
-        
-        if ky is not None:
-                if isinstance(ky, int) and ky >= 1:
-                    deriv_ket = self.derivative_y(ket, ky)
-                else:
-                    raise ValueError("ky must be a positive integer")
-                ket = deriv_ket
-            
-        if kz is not None:
-                if isinstance(kz, int) and kz >= 1:
-                    deriv_ket = self.derivative_z(ket, kz)     
-                else:
-                    raise ValueError("kz must be a positive integer")
-                ket = deriv_ket
-                
-        if f is not None:
-            F = bra*f(self.x,self.y,self.z)*ket
-            I = F.sum() * self.h
-            if I.imag == 0.0:
-                return I.real
-            else: 
-                return I
-        if f is None:
-            F = bra*ket
-            I = F.sum() * self.h
-            if I.imag == 0.0:
-                return I.real
-            else: 
-                return I
 
-    def integral_sph(self, f=None, kr=None, ktheta=None, kphi=None): 
-        bra = np.conjugate(self.orb1) 
-        ket = self.orb2
-        
-        if kr is not None:
-                if isinstance(kr, int) and kr >= 1:
-                    deriv_ket = self.derivative_r(ket, kr)         
-                else:
-                    raise ValueError("kr must be a positive integer")
-                ket = deriv_ket
-        
-        if ktheta is not None:
-                if isinstance(ktheta, int) and ktheta >= 1:
-                    deriv_ket = self.derivative_theta(ket, ktheta)
-                else:
-                    raise ValueError("ktheta must be a positive integer")
-                ket = deriv_ket
-            
-        if kphi is not None:
-                if isinstance(kphi, int) and kphi >= 1:
-                    deriv_ket = self.derivative_z(ket, kphi)     
-                else:
-                    raise ValueError("kphi must be a positive integer")
-                ket = deriv_ket
-                
-        if f is not None:
-            F = bra*f(self.r,self.theta,self.phi)*ket
-            I = F.sum() * self.h
-            if I.imag == 0.0:
-                return I.real
-            else: 
-                return I
-        if f is None:
-            F = bra*ket
-            I = F.sum() * self.h
-            if I.imag == 0.0:
-                return I.real
-            else: 
-                return I
+def matrix_element(orbital1, orbital2=None,
+                   f=None, kx=None, ky=None, kz=None, kr=None, ktheta=None, kphi=None, coord='cart'):
+    integ = integral(orbital1, orbital2=None)
+    if coord='sph'
+        return integ.integral_sph(f, kr, ktheta, kphi)
+    else:
+        return integ.integral_cart(f, kx, ky, kz)

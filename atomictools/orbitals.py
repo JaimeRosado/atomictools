@@ -92,7 +92,6 @@ class orbital_hydrog():
         
         self.orbital = self.evaluate(r, theta, phi)
         self.prob = np.abs(self.orbital)**2
-        self.int = at.integral_aux(self.x, self.y, self.z, self.r, self.theta, self.phi, self.orbital, self.d3)
 
     def evaluate(self, r, theta, phi):
         R = self.R.evaluate(r)
@@ -156,11 +155,11 @@ class orbital_hydrog():
     def expected_f_theta_phi(self, f):
         return self.Y.expected_f_theta_phi(f)
     
-    def expected_f_x_y_z(self, f=None, kx=None, ky=None, kz=None):
-        return self.int.integral_cart(f, kx, ky, kz)
+    def expected_cart(self, f=None, kx=None, ky=None, kz=None):
+        return at.matrix_element(orbital1=self, f=f, kx=kx, ky=ky, kz=kz)
   
-    def expected_f_r_theta_phi(self, f=None, kr=None, ktheta=None, kphi=None):
-        return self.int.integral_sph(f, kr, ktheta, kphi)
+    def expected_sph(self, f=None, kr=None, ktheta=None, kphi=None):
+        return at.matrix_element(orbital1=self, f=f, kr=kr, ktheta=ktheta, kphi=kphi, coord='sph')
 
     
 class orbital(orbital_hydrog):
@@ -215,7 +214,7 @@ class orbital(orbital_hydrog):
         self.orbital = self.evaluate(r, theta, phi)
         self.prob = np.abs(self.orbital)**2
 
-
+        self.int = integral_aux(self.x, self.y, self.z, self.r, self.theta, self.phi, self.orbital, self.d3)
 
 class hybrid_orbital(orbital_hydrog):
     """
@@ -292,6 +291,8 @@ class hybrid_orbital(orbital_hydrog):
         norm = x_dist_yz[-1].copy() # sum over x
         x_dist_yz /= norm
         self.x_dist_yz = x_dist_yz
+        
+        self.int = integral_aux(self.x, self.y, self.z, self.r, self.theta, self.phi, self.orbital, self.d3)
 
     def evaluate(self, x, y, z):
         orb_val = interpn((self.x_axis, self.y_axis, self.z_axis), self.orbital, (x, y, z))
@@ -410,4 +411,6 @@ class molecular_orbital(hybrid_orbital):
         x_dist_yz = prob.cumsum(axis=0) # cumsum over x
         norm = x_dist_yz[-1].copy() # sum over x
         x_dist_yz /= norm
-        self.x_dist_yz = x_dist_yz 
+        self.x_dist_yz = x_dist_yz
+        
+        self.int = integral_aux(self.x, self.y, self.z, self.r, self.theta, self.phi, self.orbital, self.d3)
