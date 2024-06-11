@@ -84,7 +84,11 @@ class orbital_hydrog():
         self.r = r
         self.theta = theta
         self.phi = phi
-        self.d3 = (2.*rmax/39.)**3
+        delta = 2. * rmax / 39.
+        self.dx = delta
+        self.dy = delta
+        self.dz = delta
+        self.d3 = delta**3
         
         self.orbital = self.evaluate(r, theta, phi)
         self.prob = np.abs(self.orbital)**2
@@ -151,12 +155,13 @@ class orbital_hydrog():
 
     def expected_f_theta_phi(self, f):
         return self.Y.expected_f_theta_phi(f)
-      
+    
     def expected_f_x_y_z(self, f=None, kx=None, ky=None, kz=None):
         return self.int.integral_cart(f, kx, ky, kz)
-    
+  
     def expected_f_r_theta_phi(self, f=None, kr=None, ktheta=None, kphi=None):
         return self.int.integral_sph(f, kr, ktheta, kphi)
+
     
 class orbital(orbital_hydrog):
     """
@@ -201,7 +206,11 @@ class orbital(orbital_hydrog):
         self.r = r
         self.theta = theta
         self.phi = phi
-        self.d3 = (2.*rmax/40.)**3
+        delta = 2. * rmax / 39.
+        self.delta_x = delta
+        self.delta_y = delta
+        self.delta_z = delta
+        self.d3 = delta**3
         
         self.orbital = self.evaluate(r, theta, phi)
         self.prob = np.abs(self.orbital)**2
@@ -253,7 +262,7 @@ class hybrid_orbital(orbital_hydrog):
         self.r = r
         self.theta = theta
         self.phi = phi
-        self.d3 = (2.*rmax/40.)**3
+        self.d3 = delta**3
         
         orbital = np.zeros([40,40,40], dtype = 'complex128')
         
