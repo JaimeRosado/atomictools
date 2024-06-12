@@ -19,7 +19,7 @@ class integral():
             self.delta_x = orbital1.delta_x
             self.delta_y = orbital1.delta_y
             self.delta_z = orbital1.delta_z
-            self.d3 = = orbital1.d3
+            self.d3 = orbital1.d3
                 
             self.x, self.y, self.z = orbital1.x, orbital1.y, orbital1.z
             self.r, self.theta, self.phi = orbital1.r, orbital1.theta, orbital1.phi
@@ -112,13 +112,13 @@ class integral():
         
         if ktheta is not None:
                 if isinstance(ktheta, int) and ktheta >= 1:
-                    ket = self.derivative_y(ket, ktheta)
+                    ket = self.derivative_theta(ket, ktheta)
                 else:
                     raise ValueError("ktheta must be a positive integer")
             
         if kphi is not None:
                 if isinstance(kphi, int) and kphi >= 1:
-                    ket = self.derivative_z(ket, kphi)     
+                    ket = self.derivative_phi(ket, kphi)     
                 else:
                     raise ValueError("kphi must be a positive integer")
                 
@@ -126,7 +126,7 @@ class integral():
             F = bra * f(self.r,self.theta,self.phi) * ket
         else:
             F = bra * ket
-        I = F.sum() * self.h
+        I = F.sum() * h
         if I.imag == 0.0:
             return I.real
         else: 
@@ -140,28 +140,28 @@ class integral():
                 if isinstance(kx, int) and kx >= 1:
                     deriv_ket = self.derivative_x(ket, kx)         
                 else:
-                    raise ValueError("kr must be a positive integer")
+                    raise ValueError("kx must be a positive integer")
                 ket = deriv_ket
         
         if ky is not None:
                 if isinstance(ky, int) and ky >= 1:
                     deriv_ket = self.derivative_y(ket, ky)
                 else:
-                    raise ValueError("ktheta must be a positive integer")
+                    raise ValueError("ky must be a positive integer")
                 ket = deriv_ket
             
         if kz is not None:
                 if isinstance(kz, int) and kz >= 1:
                     deriv_ket = self.derivative_z(ket, kz)     
                 else:
-                    raise ValueError("kphi must be a positive integer")
+                    raise ValueError("kz must be a positive integer")
                 ket = deriv_ket     
 
         if f is not None:
             F = bra * f(self.x,self.y,self.z) * ket
         else:
             F = bra * ket
-        I = F.sum() * self.h
+        I = F.sum() * h
         if I.imag == 0.0:
             return I.real
         else: 
@@ -170,7 +170,7 @@ class integral():
 def matrix_element(orbital1, orbital2=None,
                    f=None, kx=None, ky=None, kz=None, kr=None, ktheta=None, kphi=None, coord='cart'):
     integ = integral(orbital1, orbital2=None)
-    if coord='sph'
+    if coord=='sph':
         return integ.integral_sph(f, kr, ktheta, kphi)
     else:
         return integ.integral_cart(f, kx, ky, kz)

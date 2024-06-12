@@ -85,9 +85,9 @@ class orbital_hydrog():
         self.theta = theta
         self.phi = phi
         delta = 2. * rmax / 39.
-        self.dx = delta
-        self.dy = delta
-        self.dz = delta
+        self.delta_x = delta
+        self.delta_y = delta
+        self.delta_z = delta
         self.d3 = delta**3
         
         self.orbital = self.evaluate(r, theta, phi)
@@ -214,7 +214,7 @@ class orbital(orbital_hydrog):
         self.orbital = self.evaluate(r, theta, phi)
         self.prob = np.abs(self.orbital)**2
 
-        self.int = integral_aux(self.x, self.y, self.z, self.r, self.theta, self.phi, self.orbital, self.d3)
+        #self.int = integral_aux(self.x, self.y, self.z, self.r, self.theta, self.phi, self.orbital, self.d3)
 
 class hybrid_orbital(orbital_hydrog):
     """
@@ -292,7 +292,7 @@ class hybrid_orbital(orbital_hydrog):
         x_dist_yz /= norm
         self.x_dist_yz = x_dist_yz
         
-        self.int = integral_aux(self.x, self.y, self.z, self.r, self.theta, self.phi, self.orbital, self.d3)
+        #self.int = integral_aux(self.x, self.y, self.z, self.r, self.theta, self.phi, self.orbital, self.d3)
 
     def evaluate(self, x, y, z):
         orb_val = interpn((self.x_axis, self.y_axis, self.z_axis), self.orbital, (x, y, z))
@@ -413,4 +413,4 @@ class molecular_orbital(hybrid_orbital):
         x_dist_yz /= norm
         self.x_dist_yz = x_dist_yz
         
-        self.int = integral_aux(self.x, self.y, self.z, self.r, self.theta, self.phi, self.orbital, self.d3)
+        #self.int = integral_aux(self.x, self.y, self.z, self.r, self.theta, self.phi, self.orbital, self.d3)
