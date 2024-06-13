@@ -329,16 +329,21 @@ def calculate():
     ax_P.grid(True)
     ax_P.set_xlabel('r')
     ax_P.set_ylabel('P(r)')
-    ax_P.axhline(0, color='green', linewidth=0.8)  # Línea horizontal en y=0
-    ax_P.axvline(0, color='green', linewidth=0.8)  # Línea vertical en x=0
+    ax_P.axhline(0, color='green', linewidth=1.5)  # Línea horizontal en y=0
+    ax_P.axvline(0, color='green', linewidth=1.5)  # Línea vertical en x=0
     # Traza modificable de la figura
-    line_P, = ax_P.plot(r[1:], V[1:])
+    line_P, = ax_P.plot(r[1:], V[1:], 'o-')
+    line_P2, = ax_P.plot(r[1:0], V[1:0], 'o-')
     
     def calculate_P(model=model, Z=Z, N=N, A=A, a1=a1, a2=a2, H=H, D=D, npt=npt, rmc=rmc, E=E, L=L):
         r, V = _calc_pot(model, Z, N, A, a1, a2, H, D, npt, rmc) # No se usa calculate_potential
         P = _calc(r, V, Z, E, L)
+        cri = rmc/(npt**2);
+        i_st=int(1+sqrt(L*(L+1)/(20*Z*cri)))
         line_P.set_xdata(r[1:])
         line_P.set_ydata(P[1:])
+        line_P2.set_xdata(r[1:i_st])
+        line_P2.set_ydata(P[1:i_st])
         ax_P.set_xlim([-0.01*rmc, 1.01*rmc])
         fig_P.suptitle('Maximum of P at ' + f'{P.max():2.3}')
         ax_P.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
