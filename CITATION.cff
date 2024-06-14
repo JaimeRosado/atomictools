@@ -1,0 +1,11 @@
+cff-version: 0.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Villar
+    given-names: Alejandro
+  - family-names: Madrigal
+    given-names: Iris
+  - family-names: Rosado
+    given-names: Jaime
+    orcid: https://orcid.org/0000-0001-8208-9480
+title: atomictools
