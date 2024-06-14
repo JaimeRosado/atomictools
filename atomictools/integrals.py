@@ -47,42 +47,59 @@ class integral():
             
     def derivative_r(self, matrix, kr):
         for n in range(kr):
-            deriv  = (self.x/self.r) * np.diff(matrix, axis= 0, append=0.) / self.delta_x
-            deriv += (self.y/self.r) * np.diff(matrix, axis= 1, append=0.) / self.delta_y
-            deriv += (self.z/self.r) * np.diff(matrix, axis=-1, append=0.) / self.delta_z
+            deriv_ = (self.x/self.r) * np.diff(matrix, axis= 0, append=0.) / self.delta_x
+            deriv_ += (self.y/self.r) * np.diff(matrix, axis= 1, append=0.) / self.delta_y
+            deriv_ += (self.z/self.r) * np.diff(matrix, axis=-1, append=0.) / self.delta_z
+            _deriv = (self.x/self.r) * np.diff(matrix, axis= 0, prepend=0.) / self.delta_x
+            _deriv += (self.y/self.r) * np.diff(matrix, axis= 1, prepend=0.) / self.delta_y
+            _deriv += (self.z/self.r) * np.diff(matrix, axis=-1, prepend=0.) / self.delta_z
+            deriv = (deriv_ + _deriv) / 2
             matrix = deriv * 1.
         return deriv
         
     def derivative_theta(self, matrix, ktheta):
         for n in range(ktheta):
-            deriv  = self.z * np.diff(matrix, axis=0, append=0.) * np.cos(self.phi) / self.delta_x
-            deriv += self.z * np.diff(matrix, axis=1, append=0.) * np.sin(self.phi) / self.delta_y
-            deriv -= self.r * np.sin(self.theta) * np.diff(matrix, axis=-1, append=0.) / self.delta_z
+            deriv_  = self.z * np.diff(matrix, axis=0, append=0.) * np.cos(self.phi) / self.delta_x
+            deriv_ += self.z * np.diff(matrix, axis=1, append=0.) * np.sin(self.phi) / self.delta_y
+            deriv_ -= self.r * np.sin(self.theta) * np.diff(matrix, axis=-1, append=0.) / self.delta_z
+            _deriv  = self.z * np.diff(matrix, axis=0, prepend=0.) * np.cos(self.phi) / self.delta_x
+            _deriv += self.z * np.diff(matrix, axis=1, prepend=0.) * np.sin(self.phi) / self.delta_y
+            _deriv -= self.r * np.sin(self.theta) * np.diff(matrix, axis=-1, prepend=0.) / self.delta_z
+            deriv = (deriv_ + _deriv) / 2
             matrix = deriv * 1.
         return deriv
     
     def derivative_phi(self, matrix, kphi):
         for n in range(kphi):
-            deriv  = - self.y * np.diff(matrix, axis=0, append=0.) / self.delta_x
-            deriv +=   self.x * np.diff(matrix, axis=1, append=0.) / self.delta_y
+            deriv_  = - self.y * np.diff(matrix, axis=0, append=0.) / self.delta_x
+            deriv_ +=   self.x * np.diff(matrix, axis=1, append=0.) / self.delta_y
+            _deriv  = - self.y * np.diff(matrix, axis=0, prepend=0.) / self.delta_x
+            _deriv +=   self.x * np.diff(matrix, axis=1, prepend=0.) / self.delta_y
+            deriv = (deriv_ + _deriv) / 2
             matrix = deriv * 1.
         return deriv
     
     def derivative_x(self, matrix, kx): 
         for n in range(kx):
-            deriv = np.diff(matrix, n=1, axis=0, append=0.) / self.delta_x #shape[40,40,40]
+            deriv_ = np.diff(matrix, n=1, axis=0, append=0.) / self.delta_x #shape[40,40,40]
+            _deriv = np.diff(matrix, n=1, axis=0, prepend=0.) / self.delta_x
+            deriv = (deriv_ + _deriv) / 2
             matrix = deriv * 1.
         return deriv
     
     def derivative_y(self, matrix, ky):
         for n in range(ky):
-            deriv = np.diff(matrix, n=1, axis=1, append=0.) / self.delta_y #shape[40,40,40]
+            deriv_ = np.diff(matrix, n=1, axis=1, append=0.) / self.delta_y #shape[40,40,40]
+            _deriv = np.diff(matrix, n=1, axis=1, prepend=0.) / self.delta_y
+            deriv = (deriv_ + _deriv) / 2
             matrix = deriv * 1.
         return deriv
     
     def derivative_z(self, matrix, kz): 
         for n in range(kz):
-            deriv = np.diff(matrix, n=1, axis=-1, append=0.) / self.delta_z #shape[40,40,40]
+            deriv_ = np.diff(matrix, n=1, axis=-1, append=0.) / self.delta_z #shape[40,40,40]
+            _deriv = np.diff(matrix, n=1, axis=-1, prepend=0.) / self.delta_z
+            deriv = (deriv_ + _deriv) / 2
             matrix = deriv * 1.
         return deriv
     
