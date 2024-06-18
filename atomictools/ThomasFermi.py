@@ -260,7 +260,7 @@ def Fermi():
 
 #### Función para comprobación interactiva del ajuste del potencial ####
 ########################################################################
-from orbitals import _pot_GSZ, H_text, D_text
+from .calc_orbitals import _pot_GSZ, H_text, D_text
 
 # Botón para cargar fichero
 load_button = widgets.Button(description="Load")
