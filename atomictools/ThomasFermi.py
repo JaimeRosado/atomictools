@@ -281,8 +281,6 @@ def check_fit():
         D_text.disabled = False
         
         # Valores por defecto
-        V = np.zeros_like(r)
-        V = -Zef/r
         rmin = r[r<0.1].max()
         rmc = r[-1]
         Vmin = V[r==rmin][0]
