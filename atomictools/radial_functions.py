@@ -36,8 +36,8 @@ class R_hydrog:
     
     Attributes
     ----------
-    npt : int
-        Number of points.
+    rmax : array
+        Maximun radius for the electron orbit.
     r : array
         Radial distance in a.u.
     R : array
@@ -51,6 +51,8 @@ class R_hydrog:
         
     Methods
     -------
+    Evaluate(r)
+        Calculate the radial function R using an external array r.
     Plot_R()
         Plot the radial function R.
     Plot_R2()
@@ -183,14 +185,14 @@ class R_hydrog:
         fig.show()      
       
     #Obtaining the expected value for r**k   
-    def expected_rk(self, k): #using trapezoid method
+    def expected_rk(self, k): 
         F = self.dr * self.P2 * self.r**k
-        return  F.sum() # - (F[0] + F[-1]) / 2. (not needed)
+        return  F.sum() 
     
     #Obtaining the expected value of a function that depends on r
-    def expected_f(self, f): #using trapezoid method
+    def expected_f(self, f): 
         F = self.dr * self.P2 * f(self.r)
-        return F.sum() # - (F[0] + F[-1]) / 2. (not needed)
+        return F.sum()
 
 class R_num(R_hydrog):
     """
@@ -204,8 +206,8 @@ class R_num(R_hydrog):
 
     Attributes
     ----------
-    npt : int
-        Number of points.
+    rmax : array
+        Maximun radius for the electron orbit.
     r : array
         Radial distance in a.u. 
     R : array

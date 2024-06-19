@@ -98,8 +98,8 @@ class orbital_hydrog():
         Y = self.Y.evaluate(theta, phi)
         return R * Y
     
-    def calculate(self,r,theta,phi):
-        R = at.R_hydrog(n, l, Z, mu)
+    #def calculate(self,r,theta,phi):
+        #R = at.R_hydrog(n, l, Z, mu)
         
     def plot_volume(self):
         min_val = np.min(self.prob)

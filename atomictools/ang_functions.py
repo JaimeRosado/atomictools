@@ -161,6 +161,7 @@ class spherical_harmonic:
         phi = self.get_phi(points)
         return theta, phi
     
+    #Obtaining the expected value of f(theta)
     def expected_f_theta(self, f): 
         #Defining the integrand of the integral
         F = self.prob * f(self.theta) * self.domega
@@ -191,7 +192,7 @@ class real_ang_function(spherical_harmonic):
     l : int
         Orbital angular momentum quantum number.
     m : int
-        Magnetic quantum number.
+        Module of magnetic quantum number.
 
     Attributes
     ----------
