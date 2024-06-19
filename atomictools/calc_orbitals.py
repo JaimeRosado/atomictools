@@ -3,7 +3,7 @@
 
 import numpy as np
 from math import sqrt, exp
-from ipywidgets import interactive, fixed
+from ipywidgets import interactive, fixed, HBox, VBox
 import ipywidgets as widgets
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -251,6 +251,10 @@ file_box = widgets.Text(
 )
 save_button = widgets.Button(description="Save")
 save_box = widgets.Box([file_box, save_button])
+
+#left = VBox([model_dropdown, Z_text, N_text, A_text, a1_text, a2_text, H_text, D_text])
+#right = VBox([npt_text, rmc_text, E_text, L_text, file_box])
+#control = HBox([left, right])
 
 # Genera un link entre widgets para asegurar N<=Z
 dl = widgets.dlink((Z_text, 'value'), (N_text, 'max'))

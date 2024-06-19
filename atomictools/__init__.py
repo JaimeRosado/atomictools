@@ -5,3 +5,4 @@ from .ang_functions import spherical_harmonic, real_ang_function, ftheta, fphi, 
 from .orbitals import orbital_hydrog, orbital, hybrid_orbital, molecular_orbital
 from .integrals import matrix_element
 from .calc_orbitals import calculate
+from .ThomasFermi import Fermi, check_fit
