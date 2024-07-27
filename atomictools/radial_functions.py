@@ -61,6 +61,8 @@ class R_hydrog:
         Plot P = r * R.
     Plot_P2()
         Plot P^2.
+    Evaluate(r)
+        Calculate the radial function using an external r array.
     Expected_rk(k)
         Return the expected value of r**k.
     Expected_f(f)
@@ -229,6 +231,8 @@ class R_num(R_hydrog):
         Plot P = r * R.
     Plot_P2()
         Plot P^2.
+    Evaluate(r)
+        Calculate the radial function using an external r array.
     Expected_rk(k)
         Return the expected value of r**k.
     Expected_f(f)
