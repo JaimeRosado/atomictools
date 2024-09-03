@@ -33,18 +33,42 @@ class orbital_hydrog():
         Orbital angular momentum quantum number.
     m : int
         Magnetic quantum number.
-    part : 
+    part : str, default None
+        Angular function defined as a real function, can takes Re or Im as possible values.
     Z : int, default 1
         Nuclear charge in a.u.
     mu : float, default 1.0
         Reduced mass in a.u.
-        
+   
+    Attributes
+    ----------
+    R : array
+        Radial funtion.
+    Y : array
+        Angular function.
+    rmax : int
+        Maximun radius for the electron orbit.
+    orbital : array
+        Total wave function R * Y.
+    
     Methods
     -------
     Plot_volume()
         Plot the hydrogenic function as isosurfaces of probability distribution.
     Plot_scatter()
         Plot the hydrogenic function as random points following volumetric probability distribution. 
+    Evaluate(r, theta, phi)
+        Calculate the total wave function using external r, theta and phi arrays.
+    Expected_f_r(f)
+         Return the expected value of a given function f(r).
+    Expected_f_theta_phi(f)
+        Return the expected value of a given function f(theta,phi).
+    Expected_cart(f,kx,ky,kz)
+        Return the expected value of a given function described in cartesian coordinates. 
+        kx, ky, kz are None by default and represent exponents of the derivative respect to each coordinate.
+    Expected_sph(f,kr,ktheta,kphi)
+        Return the expected value of a given function described in spherical coordinates.
+        kr, ktheta, kphi are None by default and represent exponents of the derivative respect to each coordinate.
     """
     
     def __init__(self, n, l, m, part=None, Z=1, mu=1.):
@@ -164,22 +188,46 @@ class orbital_hydrog():
     
 class orbital(orbital_hydrog):
     """
-    Class for the orbital function of hydrogenic atom.
+    Class for the orbital function of an atom.
     Radial and angular parts are factorized.
     
     Parameters
     ----------
     f_rad : function 
-            Radial function of hydrogenic atom.
+            Radial function of an atom.
     f_ang : function
-            Angular function of hydrogenic atom.
-      
+            Angular function of an atom.
+            
+    Attributes
+    ----------
+    R : array
+        Radial funtion described by f_rad.
+    Y : array
+        Angular function described by f_ang.
+    rmax : int
+        Maximun radius for the electron orbit.
+    orbital : array
+        Total wave function R * Y.
+    
     Methods
     -------
     Plot_volume()
-        Plot the hydrogenic function as isosurfaces of probability distribution.
+        Plot the wave function as isosurfaces of probability distribution.
     Plot_scatter()
-        Plot the hydrogenic function as random points following volumetric probability distribution. 
+        Plot the wave function as random points following volumetric probability distribution. 
+    Evaluate(r, theta, phi)
+        Calculate the total wave function using external r, theta and phi arrays.
+    Expected_f_r(f)
+         Return the expected value of a given function f(r).
+    Expected_f_theta_phi(f)
+        Return the expected value of a given function f(theta,phi).
+    Expected_cart(f,kx,ky,kz)
+        Return the expected value of a given function described in cartesian coordinates. 
+        kx, ky, kz are None by default and represent exponents of the derivative respect to each coordinate.
+    Expected_sph(f,kr,ktheta,kphi)
+        Return the expected value of a given function described in spherical coordinates.
+        kr, ktheta, kphi are None by default and represent exponents of the derivative respect to each coordinate.
+    
     """
     def __init__(self, f_rad, f_ang):
         #l = f_rad.l
@@ -219,6 +267,7 @@ class orbital(orbital_hydrog):
 class hybrid_orbital(orbital_hydrog):
     """
     Class for linear combination of orbital functions. 
+    Radial and angular parts are not factorized.
     
     Parameters
     ----------
@@ -227,12 +276,32 @@ class hybrid_orbital(orbital_hydrog):
     coefficients: list
         Coefficients for the orbital functions.
                   
+    Attributes
+    ----------
+    rmax : int
+        Maximun radius for the electron orbit.
+    orbital : array
+        Total wave function.
+    
     Methods
     -------
     Plot_volume()
-        Plot the hydrogenic function as isosurfaces of probability distribution.
+        Plot the wave function as isosurfaces of probability distribution.
     Plot_scatter()
-        Plot the hydrogenic function as random points following volumetric probability distribution. 
+        Plot the wave function as random points following volumetric probability distribution. 
+    Evaluate(x,y,z)
+        Calculate the total wave function using external x, y an z arrays.
+    Expected_f_r(f)
+         Return the expected value of a given function f(r).
+    Expected_f_theta_phi(f)
+        Return the expected value of a given function f(theta,phi).
+    Expected_cart(f,kx,ky,kz)
+        Return the expected value of a given function described in cartesian coordinates. 
+        kx, ky, kz are None by default and represent exponents of the derivative respect to each coordinate.
+    Expected_sph(f,kr,ktheta,kphi)
+        Return the expected value of a given function described in spherical coordinates.
+        kr, ktheta, kphi are None by default and represent exponents of the derivative respect to each coordinate.
+    
     """
     def __init__(self, orbitals, coefficients):
         
@@ -338,6 +407,46 @@ class hybrid_orbital(orbital_hydrog):
         return self.expected_f_r_theta_phi(g)
     
 class molecular_orbital(hybrid_orbital):
+     """
+    Class for orbital function of a molecule.
+    Radial and angular parts are not factorized.
+    
+    Parameters
+    ----------
+    orbitals : list
+        Orbital functions.
+    coefficients: list
+        Coefficients for the orbital functions.
+    centers : list
+        Center's coordinates of the atoms of the molecule.
+        
+    Attributes
+    ----------
+    rmax : int
+        Maximun radius for the electron orbit.
+    orbital : array
+        Total wave function.
+    
+    Methods
+    -------
+    Plot_volume()
+        Plot the wave function as isosurfaces of probability distribution.
+    Plot_scatter()
+        Plot the wave function as random points following volumetric probability distribution. 
+    Evaluate(x,y,z)
+        Calculate the total wave function using external x, y an z arrays.
+    Expected_f_r(f)
+         Return the expected value of a given function f(r).
+    Expected_f_theta_phi(f)
+        Return the expected value of a given function f(theta,phi).
+    Expected_cart(f,kx,ky,kz)
+        Return the expected value of a given function described in cartesian coordinates. 
+        kx, ky, kz are None by default and represent exponents of the derivative respect to each coordinate.
+    Expected_sph(f,kr,ktheta,kphi)
+        Return the expected value of a given function described in spherical coordinates.
+        kr, ktheta, kphi are None by default and represent exponents of the derivative respect to each coordinate.
+    
+    """
     def __init__(self, orbitals, coefficients, centers):
 
         if len(orbitals)!=len(coefficients):

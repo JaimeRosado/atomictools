@@ -46,13 +46,27 @@ class spherical_harmonic:
         Polar angle in radians.
     phi : array
         Azimutal angle in radians.
-        
+    ftheta_lm : array
+        Dependence of the spherical harmonic with respect to polar angle.
+    fphi_m : array
+        Dependence of the spherical harmonic with respect to azimutal angle.
+    Y : array
+        Spherical harmonics.
+    
     Methods
     -------
     Plot_prob()
         Plot the spherical harmonic as a probability distribution per solid angle.
     Plot_phase()
         Plot the spherical harmonic as a complex function.
+    Evaluate(r)
+        Calculate the angular function as a spherical harmonic using external arrays with polar and azimutal angles.
+    Expected_f_theta(f)
+        Calculate the expected value of a given function that depends on polar angle.
+    Expected_f_phi(f)
+        Calculate the expected value of a given function that depends on azimutal angle.
+    Expected_f_theta_phi(f)
+        Calculate the expected value of a given function that depends on polar and azimutal angles.
     """
     
     def __init__(self, l, m):
@@ -200,13 +214,27 @@ class real_ang_function(spherical_harmonic):
         Polar angle in radians.
     phi : array
         Azimutal angle in radians.
-        
+    ftheta_lm : array
+        Dependence of the spherical harmonic with respect to polar angle.
+    fphi_m : array
+        Dependence of the spherical harmonic with respect to azimutal angle.
+    Y : array
+        Spherical harmonics.
+    
     Methods
     -------
     Plot_prob()
         Plot the spherical harmonic as a probability distribution per solid angle.
     Plot_phase()
         Plot the spherical harmonic as a complex function.
+    Evaluate(r)
+        Calculate the angular function as a spherical harmonic using external arrays with polar and azimutal angles.
+    Expected_f_theta(f)
+        Return the expected value of a given function that depends on polar angle.
+    Expected_f_phi(f)
+        Return the expected value of a given function that depends on azimutal angle.
+    Expected_f_theta_phi(f)
+        Return the expected value of a given function that depends on polar and azimutal angles.
     """
     def __init__(self, l, m, part="Re"):
         # definition of class atributes
@@ -309,13 +337,23 @@ class comb_ang_function(real_ang_function):
         Polar angle in radians.
     phi : array
         Azimutal angle in radians.
-        
+    ftheta_lm : array
+        Dependence of the spherical harmonic with respect to polar angle.
+    fphi_m : array
+        Dependence of the spherical harmonic with respect to azimutal angle.
+    Y : array
+        Spherical harmonics.
+    
     Methods
     -------
     Plot_prob()
         Plot the spherical harmonic as a probability distribution per solid angle.
     Plot_phase()
         Plot the spherical harmonic as a complex function.
+    Evaluate(r)
+        Calculate the angular function as a spherical harmonic using external arrays with polar and azimutal angles.
+    Expected_f_theta_phi(f)
+        Return the expected value of a given function that depends on polar and azimutal angles.
     """
     
     def __init__(self, functions, coefficients):
