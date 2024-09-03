@@ -7,6 +7,7 @@ from ipywidgets import interactive, fixed, HBox, VBox
 import ipywidgets as widgets
 from datetime import datetime
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 #### Cálculo de funciones ####
 ##############################
@@ -338,22 +339,36 @@ def calculate():
     # Traza modificable de la figura
     line_P, = ax_P.plot(r[1:], V[1:], 'o-')
     line_P2, = ax_P.plot(r[1:0], V[1:0], 'o-')
+    # Inset
+    axins_P = inset_axes(ax_P, width="40%", height="40%")
+    axins_P.axhline(0, color='green', linewidth=1.5)  # Línea horizontal en y=0
+    axins_P.axvline(0, color='green', linewidth=1.5)  # Línea vertical en x=0
+    # Traza modificable del inset
+    insline_P, = axins_P.plot(r[1:10], V[1:10], 'o-')
+    insline_P2, = axins_P.plot(r[1:0], V[1:0], 'o-')
     
     def calculate_P(model=model, Z=Z, N=N, A=A, a1=a1, a2=a2, H=H, D=D, npt=npt, rmc=rmc, E=E, L=L):
         r, V = _calc_pot(model, Z, N, A, a1, a2, H, D, npt, rmc) # No se usa calculate_potential
         P = _calc(r, V, Z, E, L)
         cri = rmc/(npt**2);
         i_st=int(1+sqrt(L*(L+1)/(20*Z*cri)))
+        ins_x=max(10, i_st+5)
         line_P.set_xdata(r[1:])
         line_P.set_ydata(P[1:])
         line_P2.set_xdata(r[1:i_st])
         line_P2.set_ydata(P[1:i_st])
         ax_P.set_xlim([-0.01*rmc, 1.01*rmc])
+        insline_P.set_xdata(r[1:ins_x])
+        insline_P.set_ydata(P[1:ins_x])
+        insline_P2.set_xdata(r[1:i_st])
+        insline_P2.set_ydata(P[1:i_st])
         rmax = r[P==P.max()]
         rmax = rmax[0]
         fig_P.suptitle('Maximum of P at ' + f'{rmax:2.3}')
         ax_P.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
         ax_P.autoscale_view()  # Ajustar la escala de los ejes si es necesario
+        axins_P.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
+        axins_P.autoscale_view()  # Ajustar la escala de los ejes si es necesario
         fig_P.canvas.draw()  # Redibujar la figura
 
         return model, Z, N, A, a1, a2, H, D, npt, rmc, E, L, r, P
