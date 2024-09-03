@@ -349,7 +349,9 @@ def calculate():
         line_P2.set_xdata(r[1:i_st])
         line_P2.set_ydata(P[1:i_st])
         ax_P.set_xlim([-0.01*rmc, 1.01*rmc])
-        fig_P.suptitle('Maximum of P at ' + f'{P.max():2.3}')
+        rmax = r[P==P.max()]
+        rmax = rmax[0]
+        fig_P.suptitle('Maximum of P at ' + f'{rmax:2.3}')
         ax_P.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
         ax_P.autoscale_view()  # Ajustar la escala de los ejes si es necesario
         fig_P.canvas.draw()  # Redibujar la figura
