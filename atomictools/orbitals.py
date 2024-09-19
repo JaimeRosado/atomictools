@@ -407,7 +407,7 @@ class hybrid_orbital(orbital_hydrog):
         return self.expected_f_r_theta_phi(g)
     
 class molecular_orbital(hybrid_orbital):
-     """
+    """
     Class for orbital function of a molecule.
     Radial and angular parts are not factorized.
     
