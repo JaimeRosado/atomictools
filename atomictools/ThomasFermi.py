@@ -197,6 +197,7 @@ def Fermi():
     
     def Accept(b): # Solucion aceptada, mostrar resultados
         clear_output();
+        plt.close()
         
         #    # Prepara figura de Rho y Zef
         fig_Rho_Zef, (ax_Rho, ax_Zef) = plt.subplots(1, 2)
