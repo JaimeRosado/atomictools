@@ -272,6 +272,7 @@ def check_fit():
 
     def Load(b): # Cargar fichero
         clear_output();
+        plt.close()
         filename = file_text.value
         Z, N = np.loadtxt(filename, skiprows=2, unpack=True, usecols = (0, 1), max_rows=1)
         r, V = np.loadtxt(filename, skiprows=5, unpack=True, usecols = (3, 5))
