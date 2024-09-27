@@ -358,8 +358,12 @@ def calculate():
         line_P2.set_xdata(r[1:i_st])
         line_P2.set_ydata(P[1:i_st])
         ax_P.set_xlim([-0.01*rmc, 1.01*rmc])
-        insline_P.set_xdata(r[1:ins_x])
-        insline_P.set_ydata(P[1:ins_x])
+        insline_P.set_xdata(r[1:])
+        insline_P.set_ydata(P[1:])
+        ins_xmax = r[ins_x]
+        axins_P.set_xlim([-0.03 * ins_xmax, 1.03 * ins_xmax])
+        ins_Pmax = 1.1 * max(P[1:ins_x].max(), -P[1:ins_x].min())
+        axins_P.set_ylim([-ins_Pmax, ins_Pmax])
         insline_P2.set_xdata(r[1:i_st])
         insline_P2.set_ydata(P[1:i_st])
         rmax = r[P==P.max()]
