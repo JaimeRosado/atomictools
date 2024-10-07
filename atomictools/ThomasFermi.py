@@ -71,7 +71,7 @@ def _calc_Rho_Zef(Z, N, x0, x, Fi): # calcula rho y Zef
 
 #### Función para guardar a fichero ####
 ########################################
-def save(Z, N, npt, x0, x, Fi, r0, K, Ef, r, Rho, Zef, filename):
+def save_Fermi(Z, N, npt, x0, x, Fi, r0, K, Ef, r, Rho, Zef, filename):
     f = open(filename, "w")
     f.write(datetime.now().strftime('%Y-%m-%d %H:%M:%S       '))
     f.write("Solution of the Thomas Fermi model for atoms" + "\n")
@@ -252,12 +252,64 @@ def Fermi():
         def Save(b): # Grabar en fichero
             clear_output();
             #save(Z, N, npt, x0, x, Fi, r0, K, Ef, r, Rho, Zef, file_text.value)
-            save(*output_Fi.result, *output_Rho_Zef, file_text.value)
+            save_Fermi(*output_Fi.result, *output_Rho_Zef, file_text.value)
 
         save_button.on_click(Save)
 
     accept_button.on_click(Accept)
 
+#### Función para resolver la ecuación de Fermi ####
+####################################################
+def Fermi2(Z, N, npt, x0):
+    x, Fi, IntRho = _calc_Fi(Z, N, npt, x0)
+
+    # Prepara la figura de Fi
+    fig_Fi, ax_Fi = plt.subplots(figsize=(9, 4))
+    fig_Fi.suptitle('Resulting Fi function     ' + f'Fi(0)={Fi[0]:2.3}    Integrated charge={IntRho:3.5}')
+    line_Fi, = ax_Fi.plot(x, Fi)
+    ax_Fi.grid(True)
+    ax_Fi.set_xlabel('x')
+    ax_Fi.set_ylabel('Fi(x)')
+    ax_Fi.axhline(0, color='green', linewidth=1.5)  # Línea horizontal en y=0
+    ax_Fi.axvline(0, color='green', linewidth=1.5)  # Línea vertical en x=0
+    ax_Fi.set_ylim([-0.1, 1.3])
+    ax_Fi.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
+    ax_Fi.autoscale_view()  # Ajustar la escala de los ejes si es necesario
+    fig_Fi.canvas.draw()  # Redibujar la figura
+
+    return Z, N, npt, x0, x, Fi
+    
+    
+def accept_Fermi(Z, N, npt, x0, x, Fi): # Solucion aceptada, mostrar resultados
+    r0, K, Ef, r, Rho, Zef = _calc_Rho_Zef(Z, N, x0, x, Fi)
+
+    # Prepara figura de Rho y Zef
+    fig_Rho_Zef, (ax_Rho, ax_Zef) = plt.subplots(1, 2)
+    fig_Rho_Zef.suptitle(f'Z={Z:3}    N={N:3}    npt={npt:4}    x0={x0:3.5}    r0={r0:3.5}')
+
+    # Plot rho a la izquierda
+    ax_Rho.set_title('Charge density')
+    ax_Rho.set_xlabel('r')
+    ax_Rho.set_xlim([0., K*x0])
+    ax_Rho.set_ylabel('log(rho)')
+    ax_Rho.set_yscale('log')
+    line_Rho, = ax_Rho.plot(r, Rho)
+    ax_Rho.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
+    ax_Rho.autoscale_view()  # Ajustar la escala de los ejes si es necesario
+
+    # Plot Zef a la derecha
+    ax_Zef.set_title('Effective charge')
+    ax_Zef.set_xlabel('r')
+    ax_Zef.set_xlim([0., K*x0])
+    ax_Zef.set_ylabel('Zeff = -r*V(r)')
+    ax_Zef.set_ylim([0., Z])
+    line_Zef, = ax_Zef.plot(r, Zef)
+    ax_Zef.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
+    ax_Zef.autoscale_view()  # Ajustar la escala de los ejes si es necesario
+
+    fig_Rho_Zef.canvas.draw()  # Redibujar la figura
+
+    return Z, N, npt, x0, x, Fi, r0, K, Ef, r, Rho, Zef
 
 #### Función para comprobación interactiva del ajuste del potencial ####
 ########################################################################
@@ -316,5 +368,29 @@ def check_fit():
 
     load_button.on_click(Load)
     
-    
-    
+#### Función para comprobación del ajuste del potencial ####
+############################################################
+def check_fit2(filename, H, D):
+    Z, N = np.loadtxt(filename, skiprows=2, unpack=True, usecols = (0, 1), max_rows=1)
+    r, V = np.loadtxt(filename, skiprows=5, unpack=True, usecols = (3, 5))
+    V_GSZ = _pot_GSZ(r, Z, N, H, D)
+        
+    # Valores por defecto
+    rmin = r[r<0.1].max()
+    rmc = r[-1]
+    Vmin = V[r==rmin][0]
+        
+    # Prepara la figura de Fi
+    fig_V, ax_V = plt.subplots(figsize=(9, 4))
+    ax_V.grid(True)
+    ax_V.set_xlabel('r')
+    ax_V.set_xlim([-0.01*rmc, 1.01*rmc])
+    ax_V.set_ylabel('V(r)')
+    ax_V.set_ylim([Vmin, -0.01*Vmin])
+    ax_V.axhline(0, color='green', linewidth=1.5)  # Línea horizontal en y=0
+    ax_V.axvline(0, color='green', linewidth=1.5)  # Línea vertical en x=0
+    ax_V.plot(r[1:], V[1:], 'o')
+    line_V_GSZ, = ax_V.plot(r[1:], V_GSZ[1:])
+    ax_V.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
+    ax_V.autoscale_view()  # Ajustar la escala de los ejes si es necesario
+    fig_V.canvas.draw()  # Redibujar la figura    

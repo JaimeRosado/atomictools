@@ -403,3 +403,45 @@ def calculate():
         save(*output.result, filename)
 
     save_button.on_click(Save)
+
+#### Función para crear figura no interactiva ####
+##################################################
+def calculate2(model, Z, N, A, a1, a2, H, D, npt, rmc, E, L):
+    r, V = _calc_pot(model, Z, N, A, a1, a2, H, D, npt, rmc) # No se usa calculate_potential
+    P = _calc(r, V, Z, E, L)
+    cri = rmc/(npt**2);
+    i_st=int(1+sqrt(L*(L+1)/(20*Z*cri)))
+    ins_x=max(10, i_st+5)
+    ins_xmax = r[ins_x]
+    ins_Pmax = 1.1 * max(P[1:ins_x].max(), -P[1:ins_x].min())
+    rmax = r[P==P.max()]
+    rmax = rmax[0]
+
+    # Prepara la figura del orbital
+    fig_P, ax_P = plt. subplots(figsize=(9, 4))
+    fig_P.suptitle('Maximum of P at ' + f'{rmax:2.3}')
+    ax_P.grid(True)
+    ax_P.set_xlabel('r')
+    ax_P.set_ylabel('P(r)')
+    ax_P.axhline(0, color='green', linewidth=1.5)  # Línea horizontal en y=0
+    ax_P.axvline(0, color='green', linewidth=1.5)  # Línea vertical en x=0
+    line_P, = ax_P.plot(r[1:], P[1:], 'o-')
+    line_P2, = ax_P.plot(r[1:i_st], P[1:i_st], 'o-')
+    ax_P.set_xlim([-0.01*rmc, 1.01*rmc])
+
+    # Inset
+    axins_P = inset_axes(ax_P, width="40%", height="40%")
+    axins_P.axhline(0, color='green', linewidth=1.5)  # Línea horizontal en y=0
+    axins_P.axvline(0, color='green', linewidth=1.5)  # Línea vertical en x=0
+    insline_P, = axins_P.plot(r[1:], P[1:], 'o-')
+    insline_P2, = axins_P.plot(r[1:i_st], P[1:i_st], 'o-')
+    axins_P.set_xlim([-0.03 * ins_xmax, 1.03 * ins_xmax])
+    axins_P.set_ylim([-ins_Pmax, ins_Pmax])
+
+    ax_P.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
+    ax_P.autoscale_view()  # Ajustar la escala de los ejes si es necesario
+    axins_P.relim()  # Recalcular los límites del gráfico basado en los nuevos datos
+    axins_P.autoscale_view()  # Ajustar la escala de los ejes si es necesario
+    fig_P.canvas.draw()  # Redibujar la figura
+    
+    return model, Z, N, A, a1, a2, H, D, npt, rmc, E, L, r, P
