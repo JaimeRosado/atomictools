@@ -131,7 +131,7 @@ class R_hydrog:
         
         fig.update_layout(
            title={
-             'text': "$$R\ vs\ r$$",
+             'text': "$$R\,vs\,r$$",
              'y':0.9,
              'x':0.5,
              'xanchor': 'center',
@@ -146,7 +146,7 @@ class R_hydrog:
         
         fig.update_layout(
            title={
-             'text': "$$P\ vs\ r$$",
+             'text': "$$P\,vs\,r$$",
              'y':0.9,
              'x':0.5,
              'xanchor': 'center',
@@ -161,7 +161,7 @@ class R_hydrog:
         
         fig.update_layout(
            title={
-             'text': "$$R^2\ vs\ r$$",
+             'text': "$$R^2\,vs\,r$$",
              'y':0.9,
              'x':0.5,
              'xanchor': 'center',
@@ -176,7 +176,7 @@ class R_hydrog:
         
         fig.update_layout(
            title={
-             'text': "$$P^2\ vs\ r$$",
+             'text': "$$P^2\,vs\,r$$",
              'y':0.9,
              'x':0.5,
              'xanchor': 'center',
