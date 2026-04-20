@@ -59,7 +59,7 @@ class spherical_harmonic:
         Plot the spherical harmonic as a probability distribution per solid angle.
     Plot_phase()
         Plot the spherical harmonic as a complex function.
-    Evaluate(r)
+    Evaluate(theta, phi)
         Calculate the angular function as a spherical harmonic using external arrays with polar and azimutal angles.
     Expected_f_theta(f)
         Calculate the expected value of a given function that depends on polar angle.
@@ -80,7 +80,8 @@ class spherical_harmonic:
         sin_theta = np.sin(theta)
         sin_theta[-1] = 0. # the last theta is pi, but sin_theta is not exactly 0
         self.sin_theta = sin_theta
-        phi = np.linspace(0., 2.*np.pi, 100)
+        #phi = np.linspace(0., 2.*np.pi, 100)
+        phi = np.linspace(-np.pi, np.pi, 100)
         self.phi = phi
         dphi = phi[1] - phi[0]
         self.dphi = dphi
@@ -167,7 +168,7 @@ class spherical_harmonic:
         return theta
 
     def get_phi(self, points=1):
-        phi = np.random.random(points) * 2. * np.pi
+        phi = (2. * np.random.random(points) - 1.) * np.pi
         return phi
 
     def get_angles(self, points=1):
@@ -227,7 +228,7 @@ class real_ang_function(spherical_harmonic):
         Plot the spherical harmonic as a probability distribution per solid angle.
     Plot_phase()
         Plot the spherical harmonic as a complex function.
-    Evaluate(r)
+    Evaluate(theta, phi)
         Calculate the angular function as a spherical harmonic using external arrays with polar and azimutal angles.
     Expected_f_theta(f)
         Return the expected value of a given function that depends on polar angle.
@@ -248,7 +249,8 @@ class real_ang_function(spherical_harmonic):
         sin_theta = np.sin(theta)
         sin_theta[-1] = 0. # the last theta is pi, but sin_theta is not exactly 0
         self.sin_theta = sin_theta
-        phi = np.linspace(0., 2.*np.pi, 100)
+        #phi = np.linspace(0., 2.*np.pi, 100)
+        phi = np.linspace(-np.pi, np.pi, 100)
         self.phi = phi
         dphi = phi[1] - phi[0]
         self.dphi = dphi
@@ -350,7 +352,7 @@ class comb_ang_function(real_ang_function):
         Plot the spherical harmonic as a probability distribution per solid angle.
     Plot_phase()
         Plot the spherical harmonic as a complex function.
-    Evaluate(r)
+    Evaluate(theta, phi)
         Calculate the angular function as a spherical harmonic using external arrays with polar and azimutal angles.
     Expected_f_theta_phi(f)
         Return the expected value of a given function that depends on polar and azimutal angles.
@@ -375,7 +377,8 @@ class comb_ang_function(real_ang_function):
         sin_theta = np.sin(theta)
         sin_theta[-1] = 0. # the last theta is pi, but sin_theta is not exactly 0
         self.sin_theta = sin_theta
-        phi = np.linspace(0., 2.*np.pi, 100)
+        #phi = np.linspace(0., 2.*np.pi, 100)
+        phi = np.linspace(-np.pi, np.pi, 100)
         self.phi = phi
         dphi = phi[1] - phi[0]
         self.dphi = dphi
@@ -492,5 +495,3 @@ class comb_ang_function(real_ang_function):
             #phi_dist /= phi_dist[-1]
             #phi[point] = np.interp(p_point, phi_dist, self.phi)
         return theta, phi
-
-
