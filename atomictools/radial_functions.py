@@ -131,13 +131,13 @@ class R_hydrog:
         
         fig.update_layout(
            title={
-             'text': r"$$R\,vs\,r$$",
+             #'text': "$R$ vs $r$",
              'y':0.9,
              'x':0.5,
              'xanchor': 'center',
              'yanchor': 'top'},
-           xaxis_title="$$r (a.u.)$$",
-           yaxis_title="$$R$$")
+           xaxis_title="$r$ (a.u.)",
+           yaxis_title="$R$")
         
         fig.show()
         
@@ -146,13 +146,13 @@ class R_hydrog:
         
         fig.update_layout(
            title={
-             'text': r"$$P\,vs\,r$$",
+             #'text': "$P$ vs $r$",
              'y':0.9,
              'x':0.5,
              'xanchor': 'center',
              'yanchor': 'top'},
-           xaxis_title="$$r (a.u.)$$",
-           yaxis_title="$$P$$")
+           xaxis_title="$r$ (a.u.)",
+           yaxis_title="$P$")
         
         fig.show()
         
@@ -161,13 +161,13 @@ class R_hydrog:
         
         fig.update_layout(
            title={
-             'text': r"$$R^2\,vs\,r$$",
+             #'text': "$R^2$",
              'y':0.9,
              'x':0.5,
              'xanchor': 'center',
              'yanchor': 'top'},
-           xaxis_title="$$r (a.u.)$$",
-           yaxis_title="$$R^2$$")
+           xaxis_title="$r$ (a.u.)",
+           yaxis_title="$R^2$")
         
         fig.show()
     
@@ -176,13 +176,13 @@ class R_hydrog:
         
         fig.update_layout(
            title={
-             'text': r"$$P^2\,vs\,r$$",
+             #'text': "$P^2$ vs $r$",
              'y':0.9,
              'x':0.5,
              'xanchor': 'center',
              'yanchor': 'top'},
-           xaxis_title="$$r (a.u.)$$",
-           yaxis_title="$$P^2$$")
+           xaxis_title="$r$ (a.u.)",
+           yaxis_title="$P^2$")
         
         fig.show()      
       
@@ -303,20 +303,3 @@ class R_num(R_hydrog):
         r_out = r>self.rmax
         R[r_out] = np.exp(lnR1 + m*(r[r_out]-r1))
         return R
-    
-  
-         
-            
-   
-
-
-
-
-    
-  
-         
-            
-   
-
-
-
